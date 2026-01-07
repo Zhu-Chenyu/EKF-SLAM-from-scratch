@@ -4,6 +4,12 @@
   <!-- This file is modified from turtlebot3_waffle_pi.urdf.xacro to fit nuturtle_description package. -->
   <!-- <xacro:include filename="$(find nuturtle_description)/urdf/common_properties.urdf"/> -->
 
+  <xacro:property name="yaml_file" value="$(find nuturtle_description)/config/diff_params.yaml"/>
+  <xacro:property name="info" value="${xacro.load_yaml(yaml_file)}"/>
+  <xacro:property name="wheel_radius" value="${info['wheel_radius']}"/>
+  <xacro:property name="track_width" value="${info['track_width']}"/>
+  <xacro:property name="collision_radius" value="${info['collision_radius']}"/>
+
   <xacro:arg name="namespace" default=""/>
   <xacro:property name="namespace" value="$(arg namespace)"/>
 
@@ -68,7 +74,7 @@
     <collision>
       <origin xyz="-0.032 0 0.070" rpy="0 0 0"/>
       <geometry>
-        <box size="0.140 0.140 0.143"/>
+        <cylinder radius="${collision_radius}" length="0.143"/>
       </geometry>
     </collision>
 
@@ -82,7 +88,7 @@
   <joint name="${namespace}wheel_left_joint" type="continuous">
     <parent link="${namespace}base_link"/>
     <child link="${namespace}wheel_left_link"/>
-    <origin xyz="0.0 0.08 0.023" rpy="-1.57 0 0"/>
+    <origin xyz="0.0 ${track_width/2} 0.023" rpy="-1.57 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -98,7 +104,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.018" radius="0.033"/>
+        <cylinder length="0.018" radius="${wheel_radius}"/>
       </geometry>
     </collision>
 
@@ -112,7 +118,7 @@
   <joint name="${namespace}wheel_right_joint" type="continuous">
     <parent link="${namespace}base_link"/>
     <child link="${namespace}wheel_right_link"/>
-    <origin xyz="0.0 -0.080 0.023" rpy="-1.57 0 0"/>
+    <origin xyz="0.0 ${-track_width/2} 0.023" rpy="-1.57 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -128,7 +134,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.018" radius="0.033"/>
+        <cylinder length="0.018" radius="${wheel_radius}"/>
       </geometry>
     </collision>
 
