@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <arg name="use_rviz" default="true" />
-    <arg name="use_jsp" default="true" />
-    <arg name="color" default="purple" >
+    <arg name="use_rviz" default="true"/>
+    <arg name="use_jsp" default="true"/>
+    <arg name="color" default="purple">
         <choice value="red"/>
         <choice value="green"/>
         <choice value="blue"/>
