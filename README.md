@@ -3,4 +3,47 @@
 * Winter 2025
 # Package List
 This repository consists of several ROS packages
-- <PACKAGE1> - <one sentence description>
+- Nuturtle Description - describle and show multiple turtlerobots on rviz
+
+
+# Nuturtle  Description
+URDF files for Nuturtle RapidBot
+* `ros2 launch nuturtle_description load_one.launch.xml` to see the robot in rviz.
+* `ros2 launch nuturtle_description load_all.launch.xml` to see four copies of the robot in rviz.
+![](images/rviz.png)
+* The rqt_graph when all four robots are visualized (Nodes Only, Hide Debug) is:
+![](images/rqt_graph.svg)
+
+# Launch File Details
+* `ros2 launch nuturtle_description load_one.launch.xml --show-args`
+  `Arguments (pass arguments as '<name>:=<value>'):
+
+    'use_rviz':
+        Show robot in rviz
+        (default: 'true')
+
+    'use_jsp':
+        Use joint state publisher
+        (default: 'true')
+
+    'color':
+        One of: ['red', 'green', 'blue', 'purple']
+        (default: 'purple')`
+* `ros2 launch nuturtle_description load_all.launch.xml --show-args`
+  `Arguments (pass arguments as '<name>:=<value>'):
+
+    'use_rviz':
+        Show robots in rviz
+        (default: 'true')
+
+    'use_jsp':
+        Use joint state publisher
+        (default: 'true')
+
+    'world_frame':
+        Select world frame
+        (default: 'nusim/world')
+
+    'color':
+        One of: ['red', 'green', 'blue', 'purple']
+        (default: 'purple')`
