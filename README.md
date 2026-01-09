@@ -16,7 +16,8 @@ URDF files for Nuturtle RapidBot
 
 # Launch File Details
 * `ros2 launch nuturtle_description load_one.launch.xml --show-args`
-  `Arguments (pass arguments as '<name>:=<value>'):
+  ```bash
+  Arguments (pass arguments as '<name>:=<value>'):
 
     'use_rviz':
         Show robot in rviz
@@ -28,9 +29,11 @@ URDF files for Nuturtle RapidBot
 
     'color':
         One of: ['red', 'green', 'blue', 'purple']
-        (default: 'purple')`
+        (default: 'purple')
+  ```
 * `ros2 launch nuturtle_description load_all.launch.xml --show-args`
-  `Arguments (pass arguments as '<name>:=<value>'):
+  ```bash
+  Arguments (pass arguments as '<name>:=<value>'):
 
     'use_rviz':
         Show robots in rviz
@@ -46,4 +49,5 @@ URDF files for Nuturtle RapidBot
 
     'color':
         One of: ['red', 'green', 'blue', 'purple']
-        (default: 'purple')`
+        (default: 'purple')
+  ```
