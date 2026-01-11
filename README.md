@@ -36,7 +36,7 @@ URDF files for Nuturtle RapidBot
   Arguments (pass arguments as '<name>:=<value>'):
 
     'use_rviz':
-        Open in rviz
+        Open rviz
         (default: 'true')
 
     'use_jsp':

@@ -15,8 +15,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(Doxygen)
 
-add_library(turtlelib src/libfile1.cpp src/libfile2.cpp)
+add_library(turtlelib src/turtlelib.cpp)
 target_compile_features(turtlelib PUBLIC cxx_std_20)
+
+add_executable(converter app/converter.cpp)
+target_link_libraries(converter turtlelib)
 
 
 target_include_directories(turtlelib
