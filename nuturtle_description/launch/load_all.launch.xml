@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <arg name="use_rviz" default="true" description="Show robots in rviz"/>
+    <arg name="use_rviz" default="true" description="Open rviz"/>
     <arg name="use_jsp" default="true" description="Use joint state publisher"/>
     <arg name="world_frame" default="nusim/world" description="Select world frame"/>
 
