@@ -2,11 +2,15 @@ Task 0.1
 Task 0.2
 Task 0.3
 Task 0.4
+
 Task A.1
 Task A.2
 Task A.3
 Task A.4
 Task A.5
 Task A.6
+
 Task B.1
 Task B.2
+Task B.3
+Task B.4

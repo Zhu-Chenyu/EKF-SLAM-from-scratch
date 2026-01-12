@@ -15,12 +15,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(Doxygen)
 
-add_library(turtlelib src/turtlelib.cpp)
+add_library(turtlelib src/geometry2d.cpp)
 target_compile_features(turtlelib PUBLIC cxx_std_20)
 
 add_executable(converter app/converter.cpp)
 target_link_libraries(converter turtlelib)
 
+add_executable(test_geometry2d test/test_geometry2d.cpp)
+target_link_libraries(test_geometry2d turtlelib Catch2::Catch2WithMain)
 
 target_include_directories(turtlelib
     PUBLIC
@@ -52,6 +54,7 @@ if(BUILD_TESTING)
   # comment the line when this package is in a git repo and when
   # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
+  find_package(Catch2)
   ament_lint_auto_find_test_dependencies()
 endif()
 
