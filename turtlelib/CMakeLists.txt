@@ -12,10 +12,10 @@ endif()
 # That is defined to reference the library
 # here: we find the eigen library as per the instruction
 # https://eigen.tuxfamily.org/dox/TopicCMakeGuide.html
-find_package(ament_cmake REQUIRED)
 find_package(Doxygen)
+find_package(Catch2 REQUIRED)
 
-add_library(turtlelib src/geometry2d.cpp)
+add_library(turtlelib src/geometry2d.cpp src/se2d.cpp)
 target_compile_features(turtlelib PUBLIC cxx_std_20)
 
 add_executable(converter app/converter.cpp)
@@ -23,6 +23,9 @@ target_link_libraries(converter turtlelib)
 
 add_executable(test_geometry2d test/test_geometry2d.cpp)
 target_link_libraries(test_geometry2d turtlelib Catch2::Catch2WithMain)
+
+add_executable(test_se2d test/test_se2d.cpp)
+target_link_libraries(test_se2d turtlelib Catch2::Catch2WithMain)
 
 target_include_directories(turtlelib
     PUBLIC
@@ -36,27 +39,12 @@ install(TARGETS turtlelib EXPORT turtlelib-targets)
 
 ##################Citation[1]###################
 add_library(turtlelib::turtlelib ALIAS turtlelib)
-
-ament_export_targets(turtlelib-targets HAS_LIBRARY_TARGET)
-ament_export_include_directories(include)
 ################################################
 
 # Building documentation should be optional.
 # To build documentation pass -DBUILD_DOCS=ON when generating the build system
 option(BUILD_DOCS "Build the documentation" OFF)
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  find_package(Catch2)
-  ament_lint_auto_find_test_dependencies()
-endif()
 
 # build the documentation
 if(${DOXYGEN_FOUND} AND ${BUILD_DOCS})
@@ -69,4 +57,3 @@ if(${DOXYGEN_FOUND} AND ${BUILD_DOCS})
     # The documentation will be in the build/html directory
     # The main page is build/html/index.html
 endif()
-ament_package()
