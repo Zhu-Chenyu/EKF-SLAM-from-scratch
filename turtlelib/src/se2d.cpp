@@ -162,6 +162,7 @@ namespace turtlelib
 
     std::istream & operator>>(std::istream & is, Transform2D & tf)
     {
+        is >> std::ws;  // skip leading whitespace including newlines
         if (is.peek() == '{')
         {
             is.get();

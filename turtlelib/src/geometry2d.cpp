@@ -12,6 +12,7 @@ namespace turtlelib
         /// \param is An istream from which to read
         /// \param p [out] The Point2D object that will store the input
         /// \returns A reference to is. An error flag is set on the stream if the input cannot be parsed.
+        is >> std::ws;  // skip leading whitespace including newlines
         if (is.peek() == '(')
         {
             is.get();
@@ -84,6 +85,7 @@ namespace turtlelib
         /// \param v [out] - output vector
         /// \returns a reference to the istream, with any error flags set if
         /// a parsing error occurs
+        is >> std::ws;  // skip leading whitespace including newlines
         if (is.peek() == '[')
         {
             is.get();

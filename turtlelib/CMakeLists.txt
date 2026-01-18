@@ -30,6 +30,9 @@ target_link_libraries(test_se2d turtlelib Catch2::Catch2WithMain)
 add_executable(test_svg test/test_svg.cpp)
 target_link_libraries(test_svg turtlelib Catch2::Catch2WithMain)
 
+add_executable(frame_main src/frame_main.cpp)
+target_link_libraries(frame_main turtlelib)
+
 target_include_directories(turtlelib
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>

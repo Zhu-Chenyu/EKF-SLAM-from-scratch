@@ -1,0 +1,29 @@
+<svg width="8.500000in" height="11.000000in"  viewBox="0 0 816.000000 1056.000000" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker style="overflow:visible" id="Arrow1Sstart" refX="0.0" refY="0.0" orient="auto">
+<path transform="scale(0.2) translate(6,0)" style="fill-rule:evenodd;fill:context-stroke;stroke:context-stroke;stroke-width:1.0pt" d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "/>
+</marker>
+</defs>
+<g>
+<line x1="408" x2="504" y1="528" y2="528" stroke="red" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<line x1="408" x2="408" y1="528" y2="432" stroke="green" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<text x="408" y="528">Ta</text>
+</g>
+<g>
+<line x1="504" x2="464.05" y1="336" y2="248.707" stroke="red" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<line x1="504" x2="416.707" y1="336" y2="375.95" stroke="green" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<text x="504" y="336">Tb</text>
+</g>
+<g>
+<line x1="162.222" x2="67.1829" y1="281.265" y2="267.718" stroke="red" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<line x1="162.222" x2="148.675" y1="281.265" y2="376.304" stroke="green" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<text x="162.222" y="281.265">Tc</text>
+</g>
+<circle cx="696" cy="240" r="3" stroke="purple" fill="purple" stroke-width="1" />
+<circle cx="415.392" cy="742.535" r="3" stroke="brown" fill="brown" stroke-width="1" />
+<circle cx="-114.613" cy="644.179" r="3" stroke="orange" fill="orange" stroke-width="1" />
+<line x1="504" x2="365.067" y1="336" y2="442.135" stroke="brown" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<line x1="504" x2="312" y1="336" y2="336" stroke="black" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<line x1="408" x2="622.535" y1="528" y2="520.608" stroke="purple" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+<line x1="162.222" x2="517.693" y1="281.265" y2="343.481" stroke="orange" stroke-width="5" marker-start="url(#Arrow1Sstart)" />
+</svg>
