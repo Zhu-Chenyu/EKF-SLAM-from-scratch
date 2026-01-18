@@ -13,21 +13,21 @@ TEST_CASE("Twist2D input operator")
     REQUIRE_THAT(tw1.omega, Catch::Matchers::WithinAbs(1.0, 1e-9));
     REQUIRE_THAT(tw1.x, Catch::Matchers::WithinAbs(2.0, 1e-9));
     REQUIRE_THAT(tw1.y, Catch::Matchers::WithinAbs(3.0, 1e-9));
-    
+
     std::istringstream iss2("0.5 [deg/s] 4.0 5.0");
     Twist2D tw2;
     iss2 >> tw2;
     REQUIRE_THAT(tw2.omega, Catch::Matchers::WithinAbs(deg2rad(0.5), 1e-9));
     REQUIRE_THAT(tw2.x, Catch::Matchers::WithinAbs(4.0, 1e-9));
     REQUIRE_THAT(tw2.y, Catch::Matchers::WithinAbs(5.0, 1e-9));
-    
+
     std::istringstream iss3("<2.0, 6.0, 7.0>"); // No unit specified
     Twist2D tw3;
     iss3 >> tw3;
     REQUIRE_THAT(tw3.omega, Catch::Matchers::WithinAbs(2.0, 1e-9));
     REQUIRE_THAT(tw3.x, Catch::Matchers::WithinAbs(6.0, 1e-9));
     REQUIRE_THAT(tw3.y, Catch::Matchers::WithinAbs(7.0, 1e-9));
-    
+
     std::istringstream iss4("<3.0 [xyz], 8.0, 9.0>"); // Invalid unit
     Twist2D tw4;
     iss4 >> tw4;
@@ -42,21 +42,21 @@ TEST_CASE("Transform2D input operator")
     REQUIRE_THAT(tf1.rotation(), Catch::Matchers::WithinAbs(1.0, 1e-9));
     REQUIRE_THAT(tf1.translation().x, Catch::Matchers::WithinAbs(2.0, 1e-9));
     REQUIRE_THAT(tf1.translation().y, Catch::Matchers::WithinAbs(3.0, 1e-9));
-    
+
     std::istringstream iss2("{0.5 [deg], 4.0 5.0}");
     Transform2D tf2;
     iss2 >> tf2;
     REQUIRE_THAT(tf2.rotation(), Catch::Matchers::WithinAbs(deg2rad(0.5), 1e-9));
     REQUIRE_THAT(tf2.translation().x, Catch::Matchers::WithinAbs(4.0, 1e-9));
     REQUIRE_THAT(tf2.translation().y, Catch::Matchers::WithinAbs(5.0, 1e-9));
-    
+
     std::istringstream iss3("{2.0, 6.0 7.0}"); // No unit specified
     Transform2D tf3;
     iss3 >> tf3;
     REQUIRE_THAT(tf3.rotation(), Catch::Matchers::WithinAbs(2.0, 1e-9));
     REQUIRE_THAT(tf3.translation().x, Catch::Matchers::WithinAbs(6.0, 1e-9));
     REQUIRE_THAT(tf3.translation().y, Catch::Matchers::WithinAbs(7.0, 1e-9));
-    
+
     std::istringstream iss4("{3.0 [xyz], 8.0 9.0}"); // Invalid unit
     Transform2D tf4;
     iss4 >> tf4;
@@ -116,7 +116,7 @@ TEST_CASE("Transform2D apply to Twist2D")
     Twist2D tw_transformed = tf(tw);
     REQUIRE_THAT(tw_transformed.omega, Catch::Matchers::WithinAbs(deg2rad(45.0), 1e-9));
     REQUIRE_THAT(tw_transformed.x, Catch::Matchers::WithinAbs(0.0, 1e-9));
-    REQUIRE_THAT(tw_transformed.y, Catch::Matchers::WithinAbs(1.0+deg2rad(45.0), 1e-9));
+    REQUIRE_THAT(tw_transformed.y, Catch::Matchers::WithinAbs(1.0 + deg2rad(45.0), 1e-9));
 }
 
 TEST_CASE("Transform2D inverse")
@@ -158,7 +158,11 @@ TEST_CASE("Transform2D *")
     Transform2D tf1(Vector2D{1.0, 2.0}, deg2rad(45.0));
     Transform2D tf2(Vector2D{3.0, 4.0}, deg2rad(30.0));
     Transform2D tf3 = tf1 * tf2;
-    REQUIRE_THAT(tf3.translation().x, Catch::Matchers::WithinAbs(1.0 + (std::cos(deg2rad(45.0)) * 3.0 - std::sin(deg2rad(45.0)) * 4.0), 1e-9));
-    REQUIRE_THAT(tf3.translation().y, Catch::Matchers::WithinAbs(2.0 + (std::sin(deg2rad(45.0)) * 3.0 + std::cos(deg2rad(45.0)) * 4.0), 1e-9));
+    REQUIRE_THAT(tf3.translation().x,
+    Catch::Matchers::WithinAbs(1.0 +
+    (std::cos(deg2rad(45.0)) * 3.0 - std::sin(deg2rad(45.0)) * 4.0), 1e-9));
+    REQUIRE_THAT(tf3.translation().y,
+    Catch::Matchers::WithinAbs(2.0 +
+    (std::sin(deg2rad(45.0)) * 3.0 + std::cos(deg2rad(45.0)) * 4.0), 1e-9));
     REQUIRE_THAT(tf3.rotation(), Catch::Matchers::WithinAbs(deg2rad(75.0), 1e-9));
 }

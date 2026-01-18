@@ -2,7 +2,7 @@
 <launch>
     <arg name="use_rviz" default="true" description="Open rviz"/>
     <arg name="use_jsp" default="true" description="Use joint state publisher"/>
-    <arg name="world_frame" default="nusim/world" description="Select world frame"/>
+    <arg name="world_frame" default="nusim/world" description="Select the world frame"/>
 
     <node pkg="rviz2" exec="rviz2" name="rviz2" on_exit="shutdown" args="-d $(find-pkg-share nuturtle_description)/config/basic_all.rviz"
             if="$(eval '\'$(var use_rviz)\' == \'true\'')"/>

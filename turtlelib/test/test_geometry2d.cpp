@@ -32,13 +32,13 @@ TEST_CASE("Point2D input operator")
     iss1 >> p1;
     REQUIRE_THAT(p1.x, Catch::Matchers::WithinAbs(1.0, 1e-9));
     REQUIRE_THAT(p1.y, Catch::Matchers::WithinAbs(2.0, 1e-9));
-    
+
     std::istringstream iss2("3.5 4.5");
     Point2D p2;
     iss2 >> p2;
     REQUIRE_THAT(p2.x, Catch::Matchers::WithinAbs(3.5, 1e-9));
     REQUIRE_THAT(p2.y, Catch::Matchers::WithinAbs(4.5, 1e-9));
-    
+
     std::istringstream iss3("(5.0 6.0)"); // Missing comma
     Point2D p3;
     iss3 >> p3;
@@ -79,4 +79,3 @@ TEST_CASE("Output formatting")
   std::string formatted_vector = std::format("{:.3f}", v);
   REQUIRE(formatted_vector == "[3.142, 2.718]");
 }
-

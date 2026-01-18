@@ -9,19 +9,19 @@
 // Note: <iosfwd> contains forward definitions for iostream objects
 // allowing implementation of custom iostream operators without
 // requiring the inclusion of <iostream>, which is a big header file
-#include<iosfwd>
-#include<format>
+#include <iosfwd>
+#include <format>
 namespace turtlelib
 {
     /// \brief a 2-Dimensional Point
-    struct Point2D
-    {
+struct Point2D
+{
         /// \brief the x coordinate
-        double x = 0.0;
+  double x = 0.0;
 
         /// \brief the y coordinate
-        double y = 0.0;
-    };
+  double y = 0.0;
+};
 
     /// \brief Input a 2 dimensional point
     ///   You should be able to read vectors entered as follows:
@@ -47,17 +47,17 @@ namespace turtlelib
     ///
     /// If you find yourself writing more than 30 or so lines for this function, you are likely
     /// on the wrong track.
-    std::istream & operator>>(std::istream & is, Point2D & p);
+std::istream & operator>>(std::istream & is, Point2D & p);
 
     /// \brief A 2-Dimensional Vector
-    struct Vector2D
-    {
+struct Vector2D
+{
         /// \brief the x coordinate
-        double x = 0.0;
+  double x = 0.0;
 
         /// \brief the y coordinate
-        double y = 0.0;
-    };
+  double y = 0.0;
+};
 
     /// \brief Subtracting one point from another yields a vector
     /// \param head point corresponding to the head of the vector
@@ -65,14 +65,14 @@ namespace turtlelib
     /// \return a vector that points from p1 to p2
     /// NOTE: this operator is not implemented in terms of -=
     /// because subtracting two Point2D yields a Vector2D not a Point2D
-    Vector2D operator-(const Point2D & head, const Point2D & tail);
+Vector2D operator-(const Point2D & head, const Point2D & tail);
 
     /// \brief Adding a vector to a point yields a new point displaced by the vector
     /// \param tail The origin of the vector's tail
     /// \param disp The displacement vector
     /// \return the point reached by displacing by disp from tail
     /// NOTE: this is not implemented in terms of += because of the different types
-    Point2D operator+(const Point2D & tail, const Vector2D & disp);
+Point2D operator+(const Point2D & tail, const Vector2D & disp);
 
 
     /// \brief output a 2 dimensional vector as [xcomponent, ycomponent]
@@ -82,7 +82,7 @@ namespace turtlelib
     /// std::format is very recent so std::ostream is commonly used.
     /// DO NOT implement in terms of std::format, this is for you
     /// to have exposure to code that does not have std::format available.
-    std::ostream & operator<<(std::ostream & os, const Vector2D & v);
+std::ostream & operator<<(std::ostream & os, const Vector2D & v);
 
     /// \brief input a 2 dimensional vector
     ///   You should be able to read vectors entered as follows:
@@ -91,13 +91,13 @@ namespace turtlelib
     /// \param v [out] - output vector
     /// \returns a reference to the istream, with any error flags set if
     /// a parsing error occurs
-    std::istream & operator>>(std::istream & is, Vector2D & v);
+std::istream & operator>>(std::istream & is, Vector2D & v);
 
     /// \brief Return a unit vector in the direction of v
     /// \param in The vector to normalize
     /// \return The normalized vector.
     /// \throws std::invalid_input if in is the zero vector
-    Vector2D normalize(Vector2D in);
+Vector2D normalize(Vector2D in);
 }
 
 /// \brief A Formatter for 2D points
@@ -105,61 +105,61 @@ namespace turtlelib
 /// All floating-point format specifiers are honored and applied to both x and y.
 namespace std
 {
-    template<class CharT>
-    class formatter<turtlelib::Point2D, CharT>
-    {
-        public:
-            formatter<double, CharT> double_fmt;
-            constexpr auto parse(basic_format_parse_context<CharT> & ctx)
-            {
-                return double_fmt.parse(ctx);
-            }
-            template<class FormatContext>
-            auto format(const turtlelib::Point2D & p, FormatContext & ctx) const
-            {
-                auto out = ctx.out();
-                *out = '(';
-                ++out;
-                out = double_fmt.format(p.x, ctx);
-                *out = ',';
-                ++out;
-                *out = ' ';
-                ++out;
-                out = double_fmt.format(p.y, ctx);
-                *out = ')';
-                ++out;
-                return out;
-            }
-    };
+template<class CharT>
+class formatter<turtlelib::Point2D, CharT>
+{
+public:
+  formatter<double, CharT> double_fmt;
+  constexpr auto parse(basic_format_parse_context<CharT> & ctx)
+  {
+    return double_fmt.parse(ctx);
+  }
+  template<class FormatContext>
+  auto format(const turtlelib::Point2D & p, FormatContext & ctx) const
+  {
+    auto out = ctx.out();
+    *out = '(';
+    ++out;
+    out = double_fmt.format(p.x, ctx);
+    *out = ',';
+    ++out;
+    *out = ' ';
+    ++out;
+    out = double_fmt.format(p.y, ctx);
+    *out = ')';
+    ++out;
+    return out;
+  }
+};
 
     /// \brief A formatter for Vector2D
     /// All double format-spec specifiers apply to each number in the vector
     /// The vector is output as [x, y]
-    template<class CharT>
-    class formatter<turtlelib::Vector2D, CharT>
-    {
-        public:
-            formatter<double, CharT> double_fmt;
-            constexpr auto parse(basic_format_parse_context<CharT> & ctx)
-            {
-                return double_fmt.parse(ctx);
-            }
-            template<class FormatContext>
-            auto format(const turtlelib::Vector2D & v, FormatContext & ctx) const
-            {
-                auto out = ctx.out();
-                *out = '[';
-                ++out;
-                out = double_fmt.format(v.x, ctx);
-                *out = ',';
-                ++out;
-                *out = ' ';
-                ++out;
-                out = double_fmt.format(v.y, ctx);
-                *out = ']';
-                ++out;
-                return out;
-            }
-    };
+template<class CharT>
+class formatter<turtlelib::Vector2D, CharT>
+{
+public:
+  formatter<double, CharT> double_fmt;
+  constexpr auto parse(basic_format_parse_context<CharT> & ctx)
+  {
+    return double_fmt.parse(ctx);
+  }
+  template<class FormatContext>
+  auto format(const turtlelib::Vector2D & v, FormatContext & ctx) const
+  {
+    auto out = ctx.out();
+    *out = '[';
+    ++out;
+    out = double_fmt.format(v.x, ctx);
+    *out = ',';
+    ++out;
+    *out = ' ';
+    ++out;
+    out = double_fmt.format(v.y, ctx);
+    *out = ']';
+    ++out;
+    return out;
+  }
+};
 }
 #endif
