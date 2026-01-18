@@ -9,6 +9,7 @@
 #include "std_srvs/srv/empty.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 using namespace std::chrono_literals;
 
@@ -41,9 +42,20 @@ class NuSimulator : public rclcpp::Node
       x_ = x0_;
       y_ = y0_;
       theta_ = theta0_;
-
       tf_broadcaster_ =
       std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
+      // Visualize Arena Boundary in RViz
+      this->declare_parameter("arena_x_length", 10.0);
+      this->declare_parameter("arena_y_length", 10.0);
+      double arena_x_length = this->get_parameter("arena_x_length").as_double();
+      double arena_y_length = this->get_parameter("arena_y_length").as_double();
+      auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local();
+      marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/real_walls", qos);
+    
+      visualization_msgs::msg::MarkerArray marker_array;
+      marker_array.markers = generate_arena_markers(arena_x_length, arena_y_length);
+      marker_pub_->publish(marker_array);
     }
 
   private:
@@ -103,11 +115,55 @@ class NuSimulator : public rclcpp::Node
       tf_broadcaster_->sendTransform(t);
     }
 
+    // Generate arena wall markers
+    std::vector<visualization_msgs::msg::Marker> generate_arena_markers(double x_length, double y_length)
+    {
+      const double wall_thickness = 0.1;
+      const double wall_height = 0.25;
+      std::vector<visualization_msgs::msg::Marker> markers;
+      // Four walls
+      std::vector<std::tuple<double, double, double, double>> walls = {
+        // Top wall (positive y)
+        {0.0, y_length/2 + wall_thickness/2, x_length + 2*wall_thickness, wall_thickness},
+        // Bottom wall (negative y)  
+        {0.0, -y_length/2 - wall_thickness/2, x_length + 2*wall_thickness, wall_thickness},
+        // Right wall (positive x)
+        {x_length/2 + wall_thickness/2, 0.0, wall_thickness, y_length},
+        // Left wall (negative x)
+        {-x_length/2 - wall_thickness/2, 0.0, wall_thickness, y_length}
+      };
+
+      int id = 0;
+      for (const auto& [x, y, x_scale, y_scale] : walls) {
+        visualization_msgs::msg::Marker marker;
+        marker.header.frame_id = "nusim/world";
+        marker.header.stamp = this->get_clock()->now();
+        marker.ns = "arena_walls";
+        marker.id = id++;
+        marker.type = visualization_msgs::msg::Marker::CUBE;
+        marker.action = visualization_msgs::msg::Marker::ADD;
+        marker.pose.position.x = x;
+        marker.pose.position.y = y;
+        marker.pose.position.z = wall_height/2;
+        marker.scale.x = x_scale;
+        marker.scale.y = y_scale;
+        marker.scale.z = wall_height;
+        marker.color.r = 1.0;
+        marker.color.g = 0.0;
+        marker.color.b = 0.0;
+        marker.color.a = 1.0;
+
+        markers.push_back(marker);
+      }
+      return markers;
+    }
+
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr ts_publisher;
     rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 };
 
 int main(int argc, char * argv[])
