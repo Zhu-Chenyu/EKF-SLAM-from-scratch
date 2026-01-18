@@ -4,6 +4,7 @@
 # Package List
 This repository consists of several ROS packages
 - Nuturtle Description - describle and show multiple turtlerobots on rviz
+- turtlelib - contains useful functions for geometry calculations
 
 
 # Nuturtle  Description
@@ -13,6 +14,12 @@ URDF files for Nuturtle RapidBot
 ![](images/rviz.png)
 * The rqt_graph when all four robots are visualized (Nodes Only, Hide Debug) is:
 ![](images/rqt_graph.svg)
+
+# Turtlelib
+A useful library for geometry calculations
+* `angle.hpp` deal with angle calculations
+* `geometry.hpp` basic calculations for 2D vectors and points
+* `se2d.hpp` calculations regarding transformation
 
 # Launch File Details
 * `ros2 launch nuturtle_description load_one.launch.xml --show-args`
