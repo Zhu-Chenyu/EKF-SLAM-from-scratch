@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="config_file" default="config/basic_world.yaml" description="configuration for arena"/>
+
+    <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.xml">
+        <arg name="use_rviz" value="false"/>
+        <arg name="use_jsp" value="true"/>
+        <arg name="color" value="red"/>
+    </include>
+
+    <node pkg="nusim" exec="nusim" name="nusim">
+        <param from="$(find-pkg-share nusim)/$(var config_file)"/>
+    </node>
+
+    <node pkg="rviz2" exec="rviz2" name="rviz2" on_exit="shutdown" args="-d $(find-pkg-share nusim)/config/nusim.rviz"/>
+</launch>

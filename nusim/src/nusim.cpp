@@ -54,8 +54,8 @@ class NuSimulator : public rclcpp::Node
       std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
       // Visualize Arena Boundary in RViz
-      this->declare_parameter("arena_x_length", 10.0);
-      this->declare_parameter("arena_y_length", 10.0);
+      this->declare_parameter("arena_x_length", 8.0);
+      this->declare_parameter("arena_y_length", 8.0);
       double arena_x_length = this->get_parameter("arena_x_length").as_double();
       double arena_y_length = this->get_parameter("arena_y_length").as_double();
       auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local();
@@ -123,8 +123,8 @@ class NuSimulator : public rclcpp::Node
     // Parameters for obstacles
     struct Obstacle
     {
-      std::vector<std::string> x;
-      std::vector<std::string> y;
+      std::vector<double> x;
+      std::vector<double> y;
       double radius;
     };
 

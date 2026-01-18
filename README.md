@@ -5,6 +5,7 @@
 This repository consists of several ROS packages
 - Nuturtle Description - describle and show multiple turtlerobots on rviz
 - turtlelib - contains useful functions for geometry calculations
+- nusim - load the arena with walls and obstacles, and put robot in it
 
 
 # Nuturtle  Description
@@ -20,6 +21,22 @@ A useful library for geometry calculations
 * `angle.hpp` deal with angle calculations
 * `geometry.hpp` basic calculations for 2D vectors and points
 * `se2d.hpp` calculations regarding transformation
+
+# Nusim
+A world creator and load turtlebots in it
+* `ros2 launch nusim nusim.launch.xml` to create the world.
+![](nusim/images/nusim1.png)
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `rate` | double | 100.0 | Simulation update rate in Hz |
+| `x0` | double | 0.0 | Initial x position of the robot |
+| `y0` | double | 0.0 | Initial y position of the robot |
+| `theta0` | double | 0.0 | Initial orientation of the robot (radians) |
+| `arena_x_length` | double | 8.0 | Length of the arena in the x direction (meters) |
+| `arena_y_length` | double | 8.0 | Length of the arena in the y direction (meters) |
+| `obstacles.x` | double[] | [] | List of x coordinates for obstacles |
+| `obstacles.y` | double[] | [] | List of y coordinates for obstacles |
+| `obstacles.r` | double | 0.2 | Radius of all obstacles (meters) |
 
 # Launch File Details
 * `ros2 launch nuturtle_description load_one.launch.xml --show-args`
