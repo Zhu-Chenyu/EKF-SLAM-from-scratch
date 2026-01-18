@@ -10,9 +10,20 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 add_executable(nusim src/nusim.cpp)
-ament_target_dependencies(nusim rclcpp std_msgs std_srvs)
+target_link_libraries(nusim PUBLIC
+  ${geometry_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  rclcpp::rclcpp
+  tf2::tf2
+  tf2_ros::static_transform_broadcaster_node
+  tf2_ros::tf2_ros
+)
 
 install(TARGETS
   nusim
