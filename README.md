@@ -26,6 +26,7 @@ A useful library for geometry calculations
 A world creator and load turtlebots in it
 * `ros2 launch nusim nusim.launch.xml` to create the world.
 ![](nusim/images/nusim1.png)
+
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `rate` | double | 100.0 | Simulation update rate in Hz |
