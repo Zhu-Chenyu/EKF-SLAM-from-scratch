@@ -116,7 +116,7 @@ TEST_CASE("Transform2D apply to Twist2D")
     Twist2D tw_transformed = tf(tw);
     REQUIRE_THAT(tw_transformed.omega, Catch::Matchers::WithinAbs(deg2rad(45.0), 1e-9));
     REQUIRE_THAT(tw_transformed.x, Catch::Matchers::WithinAbs(0.0, 1e-9));
-    REQUIRE_THAT(tw_transformed.y, Catch::Matchers::WithinAbs(1.0 + deg2rad(45.0), 1e-9));
+    REQUIRE_THAT(tw_transformed.y, Catch::Matchers::WithinAbs(1.0 - deg2rad(45.0), 1e-9));
 }
 
 TEST_CASE("Transform2D inverse")

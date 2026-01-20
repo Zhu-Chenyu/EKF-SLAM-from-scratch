@@ -104,8 +104,8 @@ Twist2D Transform2D::operator()(Twist2D v) const
 {
   Twist2D result;
   result.omega = v.omega;       // angular velocity remains unchanged
-  result.x = v.x * rotation_.x - v.y * rotation_.y - translation_.y * v.omega;
-  result.y = v.x * rotation_.y + v.y * rotation_.x + translation_.x * v.omega;
+  result.x = v.x * rotation_.x - v.y * rotation_.y + translation_.y * v.omega;
+  result.y = v.x * rotation_.y + v.y * rotation_.x - translation_.x * v.omega;
   return result;
 }
 
