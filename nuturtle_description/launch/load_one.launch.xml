@@ -18,6 +18,6 @@
     <node pkg="joint_state_publisher" exec="joint_state_publisher" namespace="$(var color)"
         if="$(eval '\'$(var use_jsp)\' == \'true\'')"/>
 
-    <node pkg="rviz2" exec="rviz2" name="rviz2" on_exit="shutdown" namespace="$(var color)/" args="-d $(find-pkg-share nuturtle_description)/config/$(var color)_turtlebot_view.rviz"
+    <node pkg="rviz2" exec="rviz2" name="rviz2" on_exit="shutdown" namespace="$(var color)/" args="-d $(find-pkg-share nuturtle_description)/config/load_one.rviz"
         if="$(eval '\'$(var use_rviz)\' == \'true\'')"/>
 </launch>

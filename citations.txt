@@ -1,0 +1,1 @@
+[1] https://stackoverflow.com/questions/38013451/using-alias-targets-in-cmake

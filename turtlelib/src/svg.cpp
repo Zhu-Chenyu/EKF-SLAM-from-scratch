@@ -14,8 +14,8 @@ void Svg::draw_point(double x, double y, double radius, std::string color)
   double svg_x = 408.0 + (x * 96.0);
   double svg_y = 528.0 - (y * 96.0);
   std::ostringstream oss;
-  oss             << "<circle cx=\"" << svg_x << "\" cy=\"" << svg_y << "\" r=\"" << radius
-                  << "\" stroke=\"" << color << "\" fill=\"" << color <<
+  oss << "<circle cx=\"" << svg_x << "\" cy=\"" << svg_y << "\" r=\"" << radius
+      << "\" stroke=\"" << color << "\" fill=\"" << color <<
     "\" stroke-width=\"1\" />\n";
   svg_content += oss.str();
 }
@@ -29,9 +29,9 @@ void Svg::draw_vector(
   double svg_x2 = 408.0 + (x2 * 96.0);
   double svg_y2 = 528.0 - (y2 * 96.0);
   std::ostringstream oss;
-  oss             << "<line x1=\"" << svg_x1 << "\" x2=\"" << svg_x2 << "\" y1=\"" << svg_y1
-                  << "\" y2=\"" << svg_y2 << "\" stroke=\"" << color
-                  << "\" stroke-width=\"" << stroke_width <<
+  oss << "<line x1=\"" << svg_x1 << "\" x2=\"" << svg_x2 << "\" y1=\"" << svg_y1
+      << "\" y2=\"" << svg_y2 << "\" stroke=\"" << color
+      << "\" stroke-width=\"" << stroke_width <<
     "\" marker-start=\"url(#Arrow1Sstart)\" />\n";
   svg_content += oss.str();
 }
