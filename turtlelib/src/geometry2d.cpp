@@ -7,11 +7,6 @@ namespace turtlelib
 {
 std::istream & operator>>(std::istream & is, Point2D & p)
 {
-        /// \brief Input a 2 dimensional point
-        ///
-        /// \param is An istream from which to read
-        /// \param p [out] The Point2D object that will store the input
-        /// \returns A reference to is. An error flag is set on the stream if the input cannot be parsed.
   is >> std::ws;        // skip leading whitespace including newlines
   if (is.peek() == '(') {
     is.get();
@@ -35,12 +30,6 @@ std::istream & operator>>(std::istream & is, Point2D & p)
 
 Vector2D operator-(const Point2D & head, const Point2D & tail)
 {
-        /// \brief Subtracting one point from another yields a vector
-        /// \param head point corresponding to the head of the vector
-        /// \param tail point corresponding to the tail of the vector
-        /// \return a vector that points from p1 to p2
-        /// NOTE: this operator is not implemented in terms of -=
-        /// because subtracting two Point2D yields a Vector2D not a Point2D
   Vector2D result;
   result.x = head.x - tail.x;
   result.y = head.y - tail.y;
@@ -49,10 +38,6 @@ Vector2D operator-(const Point2D & head, const Point2D & tail)
 
 Point2D operator+(const Point2D & tail, const Vector2D & disp)
 {
-        /// \brief Adding a vector to a point yields a new point displaced by the vector
-        /// \param tail The origin of the vector's tail
-        /// \param disp The displacement vector
-        /// \return A new point that is displaced from tail by disp
   Point2D result;
   result.x = tail.x + disp.x;
   result.y = tail.y + disp.y;
@@ -61,21 +46,12 @@ Point2D operator+(const Point2D & tail, const Vector2D & disp)
 
 std::ostream & operator<<(std::ostream & os, const Vector2D & v)
 {
-        /// \brief output a 2 dimensional vector as [xcomponent, ycomponent]
-        /// \param os - stream to output to
-        /// \param v - the vector to print
   os << "[" << v.x << ", " << v.y << "]";
   return os;
 }
 
 std::istream & operator>>(std::istream & is, Vector2D & v)
 {
-        /// \brief input a 2 dimensional vector
-        ///
-        /// \param is An istream from which to read
-        /// \param v [out] - output vector
-        /// \returns a reference to the istream, with any error flags set if
-        /// a parsing error occurs
   is >> std::ws;        // skip leading whitespace including newlines
   if (is.peek() == '[') {
     is.get();
@@ -99,10 +75,6 @@ std::istream & operator>>(std::istream & is, Vector2D & v)
 
 Vector2D normalize(Vector2D in)
 {
-        /// \brief Return a unit vector in the direction of v
-        /// \param in The vector to normalize
-        /// \return The normalized vector.
-        /// \throws std::invalid_input if in is the zero vector
   double mag = std::sqrt(in.x * in.x + in.y * in.y);
   if (mag == 0.0) {
     throw std::invalid_argument("Cannot normalize the zero vector");
@@ -111,5 +83,72 @@ Vector2D normalize(Vector2D in)
   result.x = in.x / mag;
   result.y = in.y / mag;
   return result;
+}
+
+Vector2D operator+(const Vector2D & v1, const Vector2D & v2)
+{
+  Vector2D result;
+  result.x = v1.x + v2.x;
+  result.y = v1.y + v2.y;
+  return result;
+}
+
+Vector2D & operator+=(Vector2D & v1, const Vector2D & v2)
+{
+  v1.x += v2.x;
+  v1.y += v2.y;
+  return v1;
+}
+
+Vector2D operator-(const Vector2D & v1, const Vector2D & v2)
+{
+  Vector2D result;
+  result.x = v1.x - v2.x;
+  result.y = v1.y - v2.y;
+  return result;
+}
+
+Vector2D & operator-=(Vector2D & v1, const Vector2D & v2)
+{
+  v1.x -= v2.x;
+  v1.y -= v2.y;
+  return v1;
+}
+
+Vector2D operator*(double scalar, const Vector2D & v)
+{
+  Vector2D result;
+  result.x = scalar * v.x;
+  result.y = scalar * v.y;
+  return result;
+}
+
+Vector2D & operator*=(Vector2D & v, double scalar)
+{
+  v.x *= scalar;
+  v.y *= scalar;
+  return v;
+}
+
+double dot(Vector2D v1, Vector2D v2)
+{
+  return v1.x * v2.x + v1.y * v2.y;
+}
+
+double magnitude(Vector2D v)
+{
+  return std::sqrt(v.x * v.x + v.y * v.y);
+}
+
+double angle(Vector2D v1,Vector2D v2)
+{
+  if (magnitude(v1) == 0.0 || magnitude(v2) == 0.0) {
+    throw std::invalid_argument("Cannot compute angle with the zero vector");
+  }
+  double cos_theta = dot(v1, v2) / (magnitude(v1) * magnitude(v2));
+  if (abs(cos_theta) > 1.0) {
+    throw std::invalid_argument("Cosine of angle out of range due to numerical error");
+  }
+  return std::acos(cos_theta);
 }
 }

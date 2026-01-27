@@ -98,6 +98,59 @@ std::istream & operator>>(std::istream & is, Vector2D & v);
     /// \return The normalized vector.
     /// \throws std::invalid_input if in is the zero vector
 Vector2D normalize(Vector2D in);
+
+    /// \brief Add two vectors
+    /// \param v1 The first vector
+    /// \param v2 The second vector
+    /// \return The sum of the two vectors
+Vector2D operator+(const Vector2D & v1, const Vector2D & v2);
+
+    /// \brief Add and assign two vectors
+    /// \param v1 The first vector
+    /// \param v2 The second vector
+    /// \return The sum of the two vectors assigned to v1
+Vector2D & operator+=(Vector2D & v1, const Vector2D & v2);
+
+    /// \brief Subtract two vectors
+    /// \param v1 The first vector
+    /// \param v2 The second vector
+    /// \return The difference of the two vectors
+Vector2D operator-(const Vector2D & v1, const Vector2D & v2);
+
+    /// \brief Subtract and assign two vectors
+    /// \param v1 The first vector
+    /// \param v2 The second vector
+    /// \return The difference of the two vectors assigned to v1
+Vector2D & operator-=(Vector2D & v1, const Vector2D & v2); 
+
+    /// \brief Scale a vector by a scalar
+    /// \param scalar The scaling factor
+    /// \param v The vector to be scaled
+    /// \return The scaled vector
+Vector2D operator*(double scalar, const Vector2D & v);
+
+    /// \brief Scale and assign a vector by a scalar
+    /// \param scalar The scaling factor
+    /// \param v The vector to be scaled
+    /// \return The scaled vector assigned to v
+Vector2D & operator*=(Vector2D & v, double scalar);
+
+    /// \brief Compute the dot product of two vectors
+    /// \param v1 The first vector
+    /// \param v2 The second vector
+    /// \return The dot product of the two vectors
+double dot(Vector2D, Vector2D);
+
+    /// \brief Compute the magnitude of a vector
+    /// \param v The vector
+    /// \return The magnitude of the vector
+double magnitude(Vector2D);
+
+    /// \brief Compute the angle between two vectors
+    /// \param v1 The first vector
+    /// \param v2 The second vector
+    /// \return The angle between the two vectors in radians
+double angle(Vector2D,Vector2D);
 }
 
 /// \brief A Formatter for 2D points

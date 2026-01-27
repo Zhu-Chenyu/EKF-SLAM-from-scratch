@@ -79,3 +79,51 @@ TEST_CASE("Output formatting")
   std::string formatted_vector = std::format("{:.3f}", v);
   REQUIRE(formatted_vector == "[3.142, 2.718]");
 }
+
+TEST_CASE("Vector2D addition, subtraction and scalar multiplication")
+{
+  Vector2D v1{1.0, 2.0};
+  Vector2D v2{3.0, 4.0};
+  Vector2D v_sum = v1 + v2;
+  REQUIRE_THAT(v_sum.x, Catch::Matchers::WithinAbs(4.0, 1e-9));
+  REQUIRE_THAT(v_sum.y, Catch::Matchers::WithinAbs(6.0, 1e-9));
+
+  v1 += v2;
+  REQUIRE_THAT(v1.x, Catch::Matchers::WithinAbs(4.0, 1e-9));
+  REQUIRE_THAT(v1.y, Catch::Matchers::WithinAbs(6.0, 1e-9));
+
+  Vector2D v3{5.0, 7.0};
+  Vector2D v_diff = v3 - v2;
+  REQUIRE_THAT(v_diff.x, Catch::Matchers::WithinAbs(2.0, 1e-9));
+  REQUIRE_THAT(v_diff.y, Catch::Matchers::WithinAbs(3.0, 1e-9));
+
+  v3 -= v2;
+  REQUIRE_THAT(v3.x, Catch::Matchers::WithinAbs(2.0, 1e-9));
+  REQUIRE_THAT(v3.y, Catch::Matchers::WithinAbs(3.0, 1e-9));
+
+  Vector2D v4{2.0, 3.0};
+  Vector2D v_scaled = 2.0 * v3;
+  REQUIRE_THAT(v_scaled.x, Catch::Matchers::WithinAbs(4.0, 1e-9));
+  REQUIRE_THAT(v_scaled.y, Catch::Matchers::WithinAbs(6.0, 1e-9));
+
+  v4 *= 3.0;
+  REQUIRE_THAT(v4.x, Catch::Matchers::WithinAbs(6.0, 1e-9));
+  REQUIRE_THAT(v4.y, Catch::Matchers::WithinAbs(9.0, 1e-9));
+}
+
+TEST_CASE("Vector2D dot product, magnitude, and angle")
+{
+  Vector2D v1{1.0, 0.0};
+  Vector2D v2{0.0, 1.0};
+  double dot_product = dot(v1, v2);
+  REQUIRE_THAT(dot_product, Catch::Matchers::WithinAbs(0.0, 1e-9));
+
+  Vector2D v3{3.0, 4.0};
+  double mag_v3 = magnitude(v3);
+  REQUIRE_THAT(mag_v3, Catch::Matchers::WithinAbs(5.0, 1e-9));
+
+  Vector2D v4{1.0, 0.0};
+  Vector2D v5{1.0, 1.0};
+  double angle_rad = angle(v4, v5);
+  REQUIRE_THAT(angle_rad, Catch::Matchers::WithinAbs(3.14159265358979323846 / 4.0, 1e-9));
+}

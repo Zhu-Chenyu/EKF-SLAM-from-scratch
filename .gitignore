@@ -81,3 +81,5 @@ CMakeUserPresets.json
 
 # External projects
 *-prefix/
+
+.vscode/
