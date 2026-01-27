@@ -142,6 +142,43 @@ double Transform2D::rotation() const
   return std::atan2(rotation_.y, rotation_.x);
 }
 
+Twist2D operator*(double scalar, const Twist2D & tw)
+{
+  Twist2D result;
+  result.omega = scalar * tw.omega;
+  result.x = scalar * tw.x;
+  result.y = scalar * tw.y;
+  return result;
+}
+
+Twist2D & operator*=(Twist2D & tw, double scalar)
+{
+  tw.omega *= scalar;
+  tw.x *= scalar;
+  tw.y *= scalar;
+  return tw;
+}
+
+Transform2D integrate_twist(Twist2D tw)
+{
+  Transform2D result;
+  if (std::abs(tw.omega) < 1e-10) {       // pure translation
+    result = Transform2D(Vector2D{tw.x, tw.y});
+  } else {
+    //////////////Citation [2]//////////////
+    double r_x = tw.x / tw.omega;
+    double r_y = tw.y / tw.omega;
+    double theta = tw.omega;
+    double cos_theta = std::cos(theta);
+    double sin_theta = std::sin(theta);
+    double trans_x = r_x * sin_theta - r_y * (1 - cos_theta);
+    double trans_y = r_x * (1 - cos_theta) + r_y * sin_theta;
+    result = Transform2D(Vector2D{trans_x, trans_y}, theta);
+    ////////////////////////////////////////
+  }
+  return result;
+}
+
 std::istream & operator>>(std::istream & is, Transform2D & tf)
 {
   is >> std::ws;        // skip leading whitespace including newlines

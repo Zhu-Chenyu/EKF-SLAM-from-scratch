@@ -120,6 +120,22 @@ std::istream & operator>>(std::istream & is, Transform2D & tf);
     /// HINT: This function should be implemented in terms of *=
 Transform2D operator*(Transform2D lhs, const Transform2D & rhs);
 
+    /// \brief multiply a Twist2D by a scalar
+    /// \param tw - the twist to scale
+    /// \param scalar - the scalar value
+    /// \return the scaled twist
+Twist2D operator*(double scalar, const Twist2D & tw);
+
+    /// \brief multiply a Twist2D by a scalar in place
+    /// \param tw - the twist to scale
+    /// \param scalar - the scalar value
+    /// \return the scaled twist
+Twist2D & operator*=(Twist2D & tw, double scalar);
+
+    /// \brief integrate a twist to produce a Transform2D
+    /// \param tw - the twist to integrate
+    /// \return the resulting Transform2D
+Transform2D integrate_twist(Twist2D tw);
 }
 
 /// \brief A formatter for Transform2D
