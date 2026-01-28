@@ -15,7 +15,7 @@ endif()
 find_package(Doxygen)
 find_package(Catch2 REQUIRED)
 
-add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp)
+add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp src/diff_drive.cpp)
 target_compile_features(turtlelib PUBLIC cxx_std_20)
 
 add_executable(converter app/converter.cpp)
@@ -29,6 +29,9 @@ target_link_libraries(test_se2d turtlelib Catch2::Catch2WithMain)
 
 add_executable(test_svg test/test_svg.cpp)
 target_link_libraries(test_svg turtlelib Catch2::Catch2WithMain)
+
+add_executable(test_diff_drive test/test_diff_drive.cpp)
+target_link_libraries(test_diff_drive turtlelib Catch2::Catch2WithMain)
 
 add_executable(frame_main src/frame_main.cpp)
 target_link_libraries(frame_main turtlelib)

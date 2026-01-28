@@ -21,6 +21,7 @@ A useful library for geometry calculations
 * `angle.hpp` deal with angle calculations
 * `geometry.hpp` basic calculations for 2D vectors and points
 * `se2d.hpp` calculations regarding transformation
+* `diff_drive.hpp` kinematics functions of a diff-drive robot
 
 # Nusim
 A world creator and load turtlebots in it
