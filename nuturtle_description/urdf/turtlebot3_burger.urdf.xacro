@@ -6,9 +6,10 @@
 
   <xacro:property name="yaml_file" value="$(find nuturtle_description)/config/diff_params.yaml"/>
   <xacro:property name="info" value="${xacro.load_yaml(yaml_file)}"/>
-  <xacro:property name="wheel_radius" value="${info['wheel_radius']}"/>
-  <xacro:property name="track_width" value="${info['track_width']}"/>
-  <xacro:property name="collision_radius" value="${info['collision_radius']}"/>
+  <xacro:property name="params" value="${info['/**']['ros__parameters']}"/>
+  <xacro:property name="wheel_radius" value="${params['wheel_radius']}"/>
+  <xacro:property name="track_width" value="${params['track_width']}"/>
+  <xacro:property name="collision_radius" value="${params['collision_radius']}"/>
 
   <xacro:arg name="namespace" default=""/>
   <xacro:property name="namespace" value="$(arg namespace)"/>

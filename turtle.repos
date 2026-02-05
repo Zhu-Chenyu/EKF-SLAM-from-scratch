@@ -1,0 +1,5 @@
+repositories:
+  src:
+    type: git
+    url: https://github.com/ME495-Navigation/slam-Zhu-Chenyu.git
+    version: main
