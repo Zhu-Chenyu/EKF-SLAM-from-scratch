@@ -28,10 +28,19 @@ public:
     double get_left_wheel_position() const { return left_wheel_position_; }
     double get_right_wheel_position() const { return right_wheel_position_; }
 
+    /// \brief Set the robot's current pose
+    void set_x(double x) { x_ = x; }
+    void set_y(double y) { y_ = y; }
+    void set_theta(double theta) { theta_ = theta; }
+
     /// \brief Construct a differential drive kinematic model
     /// \param wheel_track - the distance between the wheels
     /// \param wheel_radius - the radius of the wheels
     DiffDrive(double wheel_track, double wheel_radius);
+
+    /// \brief Default constructor
+    DiffDrive() : wheel_track_(0.0), wheel_radius_(0.0), left_wheel_position_(0.0),
+                  right_wheel_position_(0.0), x_(0.0), y_(0.0), theta_(0.0) {}
 
     /// \brief Update the robot's pose based on wheel movements
     /// \param new_left_wheel_position - the new position of the left wheel

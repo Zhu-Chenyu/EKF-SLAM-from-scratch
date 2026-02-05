@@ -35,13 +35,6 @@ public:
             this->declare_parameter<double>("encoder_ticks_per_rad");
             this->declare_parameter<double>("collision_radius");
 
-            double wheel_radius_;
-            double track_width_;
-            int motor_cmd_max_;
-            double motor_cmd_per_rad_sec_;
-            double encoder_ticks_per_rad_;
-            double collision_radius_;
-
             this->get_parameter("wheel_radius", wheel_radius_);
             this->get_parameter("track_width", track_width_);
             this->get_parameter("motor_cmd_max", motor_cmd_max_);
@@ -55,19 +48,28 @@ public:
             RCLCPP_INFO_STREAM(this->get_logger(), "motor_cmd_per_rad_sec: " << motor_cmd_per_rad_sec_);
             RCLCPP_INFO_STREAM(this->get_logger(), "encoder_ticks_per_rad: " << encoder_ticks_per_rad_);
             RCLCPP_INFO_STREAM(this->get_logger(), "collision_radius: " << collision_radius_);
-        } catch (e) {
+        } catch (const std::exception& e) {
             RCLCPP_ERROR(this->get_logger(), "Parameter type error: %s", e.what());
             rclcpp::shutdown();
-            return 0;
+            return;
         }
 
-        turtlelib::DiffDrive dd(track_width_, wheel_radius_);
-        rclcpp::Time prev_time_ = this->now();
+        dd = turtlelib::DiffDrive(track_width_, wheel_radius_);
+        prev_time_ = this->now();
     }
 
 private:
+    turtlelib::DiffDrive dd;
     double prev_left_wheel_pos_ = 0.0;
     double prev_right_wheel_pos_ = 0.0;
+    rclcpp::Time prev_time_ = this->now();
+
+    double wheel_radius_;
+    double track_width_;
+    int motor_cmd_max_;
+    double motor_cmd_per_rad_sec_;
+    double encoder_ticks_per_rad_;
+    double collision_radius_;
 
     void twist_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
@@ -76,7 +78,7 @@ private:
         twist.y = msg->linear.y;
         twist.omega = msg->angular.z;
 
-        auto [left_wheel_speed, right_wheel_speed] = dd.inverse_kinematics(twist);
+        auto [left_wheel_speed, right_wheel_speed] = this->dd.inverse_kinematics(twist);
 
         int left_motor_cmd = static_cast<int>(left_wheel_speed / motor_cmd_per_rad_sec_);
         int right_motor_cmd = static_cast<int>(right_wheel_speed / motor_cmd_per_rad_sec_);
