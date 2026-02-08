@@ -5,7 +5,6 @@
 
 
 #include <iosfwd>
-/// NOTE: Include other needed headers here
 #include <format>
 #include "turtlelib/angle.hpp"
 #include "turtlelib/geometry2d.hpp"

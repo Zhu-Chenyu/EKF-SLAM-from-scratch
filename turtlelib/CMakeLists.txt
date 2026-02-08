@@ -41,10 +41,21 @@ target_include_directories(turtlelib
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
     $<INSTALL_INTERFACE:include/>)
 
-install(DIRECTORY include DESTINATION include)
+install(DIRECTORY include/ DESTINATION include)
 
 # Create the targets
-install(TARGETS turtlelib EXPORT turtlelib-targets)
+install(TARGETS turtlelib EXPORT turtlelib-targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+# Install the CMake config file so other packages can find_package(turtlelib)
+install(EXPORT turtlelib-targets
+  FILE turtlelibConfig.cmake
+  NAMESPACE turtlelib::
+  DESTINATION lib/cmake/turtlelib
+)
 
 ##################Citation[1]###################
 add_library(turtlelib::turtlelib ALIAS turtlelib)

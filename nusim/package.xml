@@ -16,6 +16,7 @@
   <depend>tf2_ros</depend>
   <depend>std_srvs</depend>
   <depend>visualization_msgs</depend>
+  <depend>turtlelib</depend>
 
   <exec_depend>ros2launch</exec_depend>
 

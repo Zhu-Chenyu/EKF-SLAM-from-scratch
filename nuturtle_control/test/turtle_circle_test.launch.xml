@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node pkg="nuturtle_control" exec="circle" name="circle" on_exit="shutdown">
+        <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+    </node>
+
+    <node pkg="nuturtle_control" exec="turtle_circle_test" name="turtle_circle_test" on_exit="shutdown"/>
+</launch>
+

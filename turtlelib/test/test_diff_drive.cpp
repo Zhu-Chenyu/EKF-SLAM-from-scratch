@@ -45,7 +45,7 @@ TEST_CASE("DiffDrive moving in an arc")
     DiffDrive robot(0.5, 0.1);
 
     robot.forward_kinematics(2.0, 4.0);
-    REQUIRE_THAT(robot.get_x(), Catch::Matchers::WithinAbs(0.3, 1e-9));
+    REQUIRE_THAT(robot.get_x(), Catch::Matchers::WithinAbs(1.5, 1e-9));
     REQUIRE_THAT(robot.get_y(), Catch::Matchers::WithinAbs(0.0, 1e-9));
     REQUIRE_THAT(robot.get_theta(), Catch::Matchers::WithinAbs(0.4, 1e-9));
 

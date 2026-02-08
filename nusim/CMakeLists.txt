@@ -14,6 +14,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(turtlelib REQUIRED)
 
 add_executable(nusim src/nusim.cpp)
 target_link_libraries(nusim PUBLIC
