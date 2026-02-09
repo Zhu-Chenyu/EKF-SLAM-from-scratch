@@ -11,8 +11,8 @@ Svg::Svg() {}
 
 void Svg::draw_point(double x, double y, double radius, std::string color)
 {
-  double svg_x = 408.0 + (x * 96.0);
-  double svg_y = 528.0 - (y * 96.0);
+  auto svg_x = 408.0 + (x * 96.0);
+  auto svg_y = 528.0 - (y * 96.0);
   std::ostringstream oss;
   oss << "<circle cx=\"" << svg_x << "\" cy=\"" << svg_y << "\" r=\"" << radius
       << "\" stroke=\"" << color << "\" fill=\"" << color <<
@@ -24,10 +24,10 @@ void Svg::draw_vector(
   double x1, double y1, double x2, double y2, std::string color,
   int stroke_width)
 {
-  double svg_x1 = 408.0 + (x1 * 96.0);
-  double svg_y1 = 528.0 - (y1 * 96.0);
-  double svg_x2 = 408.0 + (x2 * 96.0);
-  double svg_y2 = 528.0 - (y2 * 96.0);
+  auto svg_x1 = 408.0 + (x1 * 96.0);
+  auto svg_y1 = 528.0 - (y1 * 96.0);
+  auto svg_x2 = 408.0 + (x2 * 96.0);
+  auto svg_y2 = 528.0 - (y2 * 96.0);
   std::ostringstream oss;
   oss << "<line x1=\"" << svg_x1 << "\" x2=\"" << svg_x2 << "\" y1=\"" << svg_y1
       << "\" y2=\"" << svg_y2 << "\" stroke=\"" << color
@@ -48,8 +48,8 @@ void Svg::draw_frame(
   draw_vector(origin.x, origin.y, x_axis_end.x, x_axis_end.y, "red", stroke_width);
   draw_vector(origin.x, origin.y, y_axis_end.x, y_axis_end.y, "green", stroke_width);
   std::ostringstream oss;
-  double svg_x = 408.0 + (origin.x * 96.0);
-  double svg_y = 528.0 - (origin.y * 96.0);
+  auto svg_x = 408.0 + (origin.x * 96.0);
+  auto svg_y = 528.0 - (origin.y * 96.0);
   oss << "<text x=\"" << svg_x << "\" y=\"" << svg_y << "\">" << name << "</text>\n";
   oss << "</g>\n";
   svg_content += oss.str();

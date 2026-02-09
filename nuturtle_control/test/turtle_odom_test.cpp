@@ -13,10 +13,10 @@ TEST_CASE("Initial pose service")
 
     auto client = node->create_client<nuturtle_control::srv::InitialPose>("initial_pose");
     while (!client->wait_for_service(std::chrono::seconds(1))) {
-        if (!rclcpp::ok()) {
-            FAIL("Service not available");
-            return;
-        }
+    if (!rclcpp::ok()) {
+      FAIL("Service not available");
+      return;
+    }
     }
 
     auto request = std::make_shared<nuturtle_control::srv::InitialPose::Request>();
@@ -25,9 +25,11 @@ TEST_CASE("Initial pose service")
     request->theta = 0.5;
 
     auto result_future = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-        FAIL("Failed to call service");
-        return;
+    if (rclcpp::spin_until_future_complete(node,
+    result_future) != rclcpp::FutureReturnCode::SUCCESS)
+  {
+    FAIL("Failed to call service");
+    return;
     }
 
     SUCCEED();
@@ -53,12 +55,13 @@ TEST_CASE("TF from odom to base_footprint")
     bool received = false;
     auto start_time = node->now();
     while (rclcpp::ok() && !received && (node->now() - start_time).seconds() < 5.0) {
-        pub->publish(msg);
-        try {
-            transform = tf_buffer->lookupTransform("odom", "base_footprint", tf2::TimePointZero);
-            received = true;
-        } catch (const tf2::TransformException &) {}
-        rclcpp::spin_some(node);
+    pub->publish(msg);
+    try {
+      transform = tf_buffer->lookupTransform("odom", "base_footprint", tf2::TimePointZero);
+      received = true;
+    } catch (const tf2::TransformException &) {
+    }
+    rclcpp::spin_some(node);
     }
 
     REQUIRE(received);

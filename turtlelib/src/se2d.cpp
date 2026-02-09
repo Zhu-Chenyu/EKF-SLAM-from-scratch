@@ -17,9 +17,9 @@ std::istream & operator>>(std::istream & is, Twist2D & tw)
       is.get();           // remove the '['
       std::string unit;
       getline(is, unit, ']');
-      if (unit[0] == 'd') {
+      if (unit.at(0) == 'd') {
         tw.omega = turtlelib::deg2rad(tw.omega);
-      } else if (unit[0] != 'r') {
+      } else if (unit.at(0) != 'r') {
         is.setstate(std::ios::failbit);
       }
     }
@@ -49,9 +49,9 @@ std::istream & operator>>(std::istream & is, Twist2D & tw)
       is.get();           // remove the '['
       std::string unit;
       getline(is, unit, ']');
-      if (unit[0] == 'd') {
+      if (unit.at(0) == 'd') {
         tw.omega = turtlelib::deg2rad(tw.omega);
-      } else if (unit[0] != 'r') {
+      } else if (unit.at(0) != 'r') {
         is.setstate(std::ios::failbit);
       }
     }
@@ -193,9 +193,9 @@ std::istream & operator>>(std::istream & is, Transform2D & tf)
       is.get();           // remove the '['
       std::string unit;
       getline(is, unit, ']');
-      if (unit[0] == 'd') {
+      if (unit.at(0) == 'd') {
         angle = turtlelib::deg2rad(angle);
-      } else if (unit[0] != 'r') {
+      } else if (unit.at(0) != 'r') {
         is.setstate(std::ios::failbit);
       }
     }
@@ -222,9 +222,9 @@ std::istream & operator>>(std::istream & is, Transform2D & tf)
       is.get();           // remove the '['
       std::string unit;
       getline(is, unit, ']');
-      if (unit[0] == 'd') {
+      if (unit.at(0) == 'd') {
         angle = turtlelib::deg2rad(angle);
-      } else if (unit[0] != 'r') {
+      } else if (unit.at(0) != 'r') {
         is.setstate(std::ios::failbit);
       }
     }

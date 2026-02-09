@@ -34,7 +34,7 @@ public:
   : Node("nusimulator")
   {
     declare_parameter("rate", 100.0);
-    double rate = get_parameter("rate").as_double();
+    auto rate = get_parameter("rate").as_double();
     dt_ = std::chrono::duration<double>(1.0 / rate);
     ts_publisher = this->create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
     reset_srv = this->create_service<std_srvs::srv::Empty>(
@@ -60,8 +60,8 @@ public:
       // Visualize Arena Boundary in RViz
     declare_parameter("arena_x_length", 8.0);
     declare_parameter("arena_y_length", 8.0);
-    double arena_x_length = get_parameter("arena_x_length").as_double();
-    double arena_y_length = get_parameter("arena_y_length").as_double();
+    auto arena_x_length = get_parameter("arena_x_length").as_double();
+    auto arena_y_length = get_parameter("arena_y_length").as_double();
     auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local();
     wall_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/real_walls",
       qos);
@@ -117,8 +117,8 @@ public:
     declare_parameter("wheel_radius", 0.033);
     declare_parameter("track_width", 0.16);
     declare_parameter("motor_cmd_per_rad_sec", 0.024);
-    double wheel_radius = get_parameter("wheel_radius").as_double();
-    double track_width = get_parameter("track_width").as_double();
+    auto wheel_radius = get_parameter("wheel_radius").as_double();
+    auto track_width = get_parameter("track_width").as_double();
     motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
     dt_seconds_ = 1.0 / rate;
     dd = turtlelib::DiffDrive(track_width, wheel_radius);

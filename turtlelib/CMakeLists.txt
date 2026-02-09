@@ -16,7 +16,7 @@ find_package(Doxygen)
 find_package(Catch2 REQUIRED)
 
 add_library(turtlelib src/geometry2d.cpp src/se2d.cpp src/svg.cpp src/diff_drive.cpp)
-target_compile_features(turtlelib PUBLIC cxx_std_20)
+target_compile_features(turtlelib PUBLIC cxx_std_23)
 
 add_executable(converter app/converter.cpp)
 target_link_libraries(converter turtlelib)
