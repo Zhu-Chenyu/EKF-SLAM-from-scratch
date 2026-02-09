@@ -77,3 +77,8 @@ A world creator and load turtlebots in it
         One of: ['red', 'green', 'blue', 'purple']
         (default: 'purple')
   ```
+  
+  [](https://github.com/user-attachments/assets/7a3695a2-e658-4960-9db1-97ebaf027cb2)
+
+
+  [](https://github.com/user-attachments/assets/7b79d5f1-7803-4adb-b0d5-2778ddb19b9f)

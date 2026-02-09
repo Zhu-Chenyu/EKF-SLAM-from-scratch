@@ -12,12 +12,12 @@ Circle::Circle()
         );
 
         control_service_ = this->create_service<nuturtle_control::srv::Control>(
-            "control_circle",
+            "control",
             std::bind(&Circle::control_callback, this, std::placeholders::_1, std::placeholders::_2)
         );
 
         reverse_service_ = this->create_service<std_srvs::srv::Empty>(
-            "reverse_circle",
+            "reverse",
             [this](const std::shared_ptr<std_srvs::srv::Empty::Request>,
                    std::shared_ptr<std_srvs::srv::Empty::Response>)
             {
@@ -26,7 +26,7 @@ Circle::Circle()
         );
 
         stop_service_ = this->create_service<std_srvs::srv::Empty>(
-            "stop_circle",
+            "stop",
             [this](const std::shared_ptr<std_srvs::srv::Empty::Request>,
                    std::shared_ptr<std_srvs::srv::Empty::Response>)
             {
