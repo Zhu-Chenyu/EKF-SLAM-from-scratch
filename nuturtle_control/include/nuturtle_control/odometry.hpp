@@ -37,7 +37,7 @@ private:
     std::string body_id_;
     std::string odom_id_;
     std::string wheel_left_ = "left_wheel_joint";
-    std::string wheel_right_ = "right_wheel_joint";
+    std::string wheel_right_ = "wheel_right_joint";
     double wheel_radius_ = 0.033;
     double track_width_ = 0.16;
 };

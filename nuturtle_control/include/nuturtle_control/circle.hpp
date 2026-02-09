@@ -17,8 +17,8 @@ public:
     Circle();
 private:
     int freq = 100;
-    double radius_ = 1.0;
-    double velocity_ = 0.0;
+    double radius_ = 0.0;
+    double velocity_ = 0.0; // angular velocity
     /// \brief Publish velocity commands to follow a circular trajectory at a specified frequency.
     void timer_callback();
     /// \brief Service callback to update the radius and velocity of the circular trajectory.

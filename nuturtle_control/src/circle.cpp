@@ -38,8 +38,8 @@ Circle::Circle()
 void Circle::timer_callback()
 {
     auto message = geometry_msgs::msg::Twist();
-    message.linear.x = velocity_;  // Forward linear velocity
-    message.angular.z = velocity_ / radius_; // Angular velocity for circular motion
+    message.angular.z = velocity_;  // Angular velocity
+    message.linear.x = velocity_ * radius_; // Linear velocity for circular motion
     cmd_publisher_->publish(message);
 }
 

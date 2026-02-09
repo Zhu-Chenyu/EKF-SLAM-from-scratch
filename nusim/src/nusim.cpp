@@ -10,6 +10,10 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include "nuturtlebot_msgs/msg/wheel_commands.hpp"
+#include "nuturtlebot_msgs/msg/sensor_data.hpp"
+#include "turtlelib/diff_drive.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 
 using namespace std::chrono_literals;
 
@@ -29,24 +33,24 @@ public:
   NuSimulator()
   : Node("nusimulator")
   {
-    this->declare_parameter("rate", 100.0);
-    double rate = this->get_parameter("rate").as_double();
-    auto dt = std::chrono::duration<double>(1.0 / rate);
+    declare_parameter("rate", 100.0);
+    double rate = get_parameter("rate").as_double();
+    dt_ = std::chrono::duration<double>(1.0 / rate);
     ts_publisher = this->create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
     reset_srv = this->create_service<std_srvs::srv::Empty>(
         "~/reset", std::bind(&NuSimulator::reset_callback, this,
           std::placeholders::_1,
           std::placeholders::_2));
     timer_ = this->create_wall_timer(
-      dt, std::bind(&NuSimulator::timer_callback, this));
+      dt_, std::bind(&NuSimulator::timer_callback, this));
 
       // Broadcast tf between "nusim/world" and "red/base_footprint"
-    this->declare_parameter("x0", 0.0);
-    this->declare_parameter("y0", 0.0);
-    this->declare_parameter("theta0", 0.0);
-    x0_ = this->get_parameter("x0").as_double();
-    y0_ = this->get_parameter("y0").as_double();
-    theta0_ = this->get_parameter("theta0").as_double();
+    declare_parameter("x0", 0.0);
+    declare_parameter("y0", 0.0);
+    declare_parameter("theta0", 0.0);
+    x0_ = get_parameter("x0").as_double();
+    y0_ = get_parameter("y0").as_double();
+    theta0_ = get_parameter("theta0").as_double();
     x_ = x0_;
     y_ = y0_;
     theta_ = theta0_;
@@ -54,10 +58,10 @@ public:
       std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
       // Visualize Arena Boundary in RViz
-    this->declare_parameter("arena_x_length", 8.0);
-    this->declare_parameter("arena_y_length", 8.0);
-    double arena_x_length = this->get_parameter("arena_x_length").as_double();
-    double arena_y_length = this->get_parameter("arena_y_length").as_double();
+    declare_parameter("arena_x_length", 8.0);
+    declare_parameter("arena_y_length", 8.0);
+    double arena_x_length = get_parameter("arena_x_length").as_double();
+    double arena_y_length = get_parameter("arena_y_length").as_double();
     auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local();
     wall_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/real_walls",
       qos);
@@ -69,13 +73,13 @@ public:
       //Visualize Obstacles in RViz
     obs_marker_pub_ =
       this->create_publisher<visualization_msgs::msg::MarkerArray>("~/real_obstacles", qos);
-    this->declare_parameter("obstacles.x", std::vector<double>{});
-    this->declare_parameter("obstacles.y", std::vector<double>{});
-    this->declare_parameter("obstacles.r", 0.2);
+    declare_parameter("obstacles.x", std::vector<double>{});
+    declare_parameter("obstacles.y", std::vector<double>{});
+    declare_parameter("obstacles.r", 0.2);
     Obstacle obs;
-    obs.x = this->get_parameter("obstacles.x").as_double_array();
-    obs.y = this->get_parameter("obstacles.y").as_double_array();
-    obs.radius = this->get_parameter("obstacles.r").as_double();
+    obs.x = get_parameter("obstacles.x").as_double_array();
+    obs.y = get_parameter("obstacles.y").as_double_array();
+    obs.radius = get_parameter("obstacles.r").as_double();
     if (obs.x.size() != obs.y.size()) {
       RCLCPP_ERROR(this->get_logger(), "Obstacle x and y size mismatch!");
       throw std::runtime_error("Obstacle x and y size mismatch!");
@@ -104,11 +108,34 @@ public:
         obstacle_markers.markers.push_back(marker);
       }
       obs_marker_pub_->publish(obstacle_markers);
+
+      declare_parameter("encoder_ticks_per_rad", 0.0);
+      get_parameter("encoder_ticks_per_rad", this->encoder_ticks_per_rad_);
+
     }
+
+    declare_parameter("wheel_radius", 0.033);
+    declare_parameter("track_width", 0.16);
+    declare_parameter("motor_cmd_per_rad_sec", 0.024);
+    double wheel_radius = get_parameter("wheel_radius").as_double();
+    double track_width = get_parameter("track_width").as_double();
+    motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
+    dt_seconds_ = 1.0 / rate;
+    dd = turtlelib::DiffDrive(track_width, wheel_radius);
+
+    cmd_sub_ = this->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
+      "red/wheel_cmd", 10, std::bind(&NuSimulator::cmd_callback, this, std::placeholders::_1));
+    sensor_pub_ = this->create_publisher<nuturtlebot_msgs::msg::SensorData>("red/sensor_data", 10);
+
+    joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("red/joint_states", 10);
   }
 
 private:
   uint64_t timestep = 0;
+  std::chrono::duration<double> dt_{0.01};
+  double dt_seconds_ = 0.01;
+  double motor_cmd_per_rad_sec_ = 0.024;
+  double encoder_ticks_per_rad_ = 0.0;
 
     // Robot pose state
   double x_;
@@ -119,6 +146,14 @@ private:
   double x0_;
   double y0_;
   double theta0_;
+
+    // Wheel state
+  double v_left_ = 0.0;
+  double v_right_ = 0.0;
+  double pos_left_ = 0.0;
+  double pos_right_ = 0.0;
+
+  turtlelib::DiffDrive dd;
 
     // Parameters for obstacles
   struct Obstacle
@@ -133,9 +168,29 @@ private:
     timestep++;
     auto message = std_msgs::msg::UInt64();
     message.data = timestep;
-    RCLCPP_INFO(this->get_logger(), "Publishing timestep: '%lu'", message.data);
+    // RCLCPP_INFO(this->get_logger(), "Publishing timestep: '%lu'", message.data);
     ts_publisher->publish(message);
     broadcast_tf();
+
+    pos_left_ += v_left_ * dt_seconds_;
+    pos_right_ += v_right_ * dt_seconds_;
+
+    this->dd.forward_kinematics(pos_left_, pos_right_);
+    x_ = this->dd.get_x();
+    y_ = this->dd.get_y();
+    theta_ = this->dd.get_theta();
+
+    nuturtlebot_msgs::msg::SensorData sensor_msg;
+    sensor_msg.left_encoder = pos_left_ * encoder_ticks_per_rad_;
+    sensor_msg.right_encoder = pos_right_ * encoder_ticks_per_rad_;
+    sensor_pub_->publish(sensor_msg);
+
+    sensor_msgs::msg::JointState joint_msg;
+    joint_msg.header.stamp = this->get_clock()->now();
+    joint_msg.name = {"wheel_left_joint", "wheel_right_joint"};
+    joint_msg.position = {pos_left_, pos_right_};
+    joint_msg.velocity = {v_left_, v_right_};
+    joint_state_pub_->publish(joint_msg);
   }
 
   void reset_callback(
@@ -217,6 +272,17 @@ private:
     return markers;
   }
 
+  void cmd_callback(const nuturtlebot_msgs::msg::WheelCommands::SharedPtr msg)
+  {
+    double v_left_raw = msg->left_velocity;
+    double v_right_raw = msg->right_velocity;
+
+    // The velocity commands are given in the range [-265, 265] rad/s, which corresponds to [-2.84, 2.84] in the raw command values. We need to convert them to m/s for our simulation. Assuming the wheel radius is 0.028m, the conversion factor is (wheel_radius * 2 * pi) / 265.
+    v_left_ = v_left_raw / 265.0 * 2.84;
+    v_right_ = v_right_raw / 265.0 * 2.84;
+
+  }
+
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr ts_publisher;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv;
@@ -224,6 +290,9 @@ private:
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr wall_marker_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obs_marker_pub_;
+  rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr cmd_sub_;
+  rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
 };
 
 int main(int argc, char * argv[])

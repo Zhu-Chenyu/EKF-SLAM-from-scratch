@@ -15,6 +15,8 @@ find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
+find_package(nuturtlebot_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_executable(nusim src/nusim.cpp)
 target_link_libraries(nusim PUBLIC
@@ -26,6 +28,9 @@ target_link_libraries(nusim PUBLIC
   tf2::tf2
   tf2_ros::static_transform_broadcaster_node
   tf2_ros::tf2_ros
+  turtlelib::turtlelib
+  ${nuturtlebot_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
 )
 
 install(TARGETS

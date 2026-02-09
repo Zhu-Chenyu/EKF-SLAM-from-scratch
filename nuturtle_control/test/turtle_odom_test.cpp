@@ -44,7 +44,7 @@ TEST_CASE("TF from odom to base_footprint")
     auto pub = node->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
     sensor_msgs::msg::JointState msg;
     msg.header.stamp = node->now();
-    msg.name = {"left_wheel_joint", "right_wheel_joint"};
+    msg.name = {"left_wheel_joint", "wheel_right_joint"};
     msg.position = {0.0, 0.0};
     msg.velocity = {0.0, 0.0};
 

@@ -79,7 +79,7 @@ void TurtleControl::sensor_callback(const nuturtlebot_msgs::msg::SensorData::Sha
 {
     sensor_msgs::msg::JointState joint_state_msg;
     joint_state_msg.header.stamp = this->now();
-    joint_state_msg.name = {"left_wheel_joint", "right_wheel_joint"};
+    joint_state_msg.name = {"wheel_left_joint", "wheel_right_joint"};
     double left_wheel_pos = static_cast<double>(msg->left_encoder) / encoder_ticks_per_rad_;
     double right_wheel_pos = static_cast<double>(msg->right_encoder) / encoder_ticks_per_rad_;
     joint_state_msg.position = {left_wheel_pos, right_wheel_pos};

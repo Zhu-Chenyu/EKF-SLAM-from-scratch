@@ -28,10 +28,16 @@ void DiffDrive::forward_kinematics(double new_left_wheel_position, double new_ri
   double d_center = (d_left + d_right) / 2.0;
   double d_theta = (d_right - d_left) / wheel_track_;
 
-  double R = (d_theta != 0.0) ? (d_center / d_theta) : 0.0;
-
-  this->x_ += R * (std::sin(this->theta_ + d_theta) - std::sin(this->theta_));
-  this->y_ += -R * (std::cos(this->theta_ + d_theta) - std::cos(this->theta_));
+  if (std::abs(d_theta) < 1e-10) {
+    // Pure translation (straight line)
+    this->x_ += d_center * std::cos(this->theta_);
+    this->y_ += d_center * std::sin(this->theta_);
+  } else {
+    // Arc motion
+    double R = d_center / d_theta;
+    this->x_ += R * (std::sin(this->theta_ + d_theta) - std::sin(this->theta_));
+    this->y_ += -R * (std::cos(this->theta_ + d_theta) - std::cos(this->theta_));
+  }
   this->theta_ = normalize_angle(this->theta_ + d_theta);
 
   this->left_wheel_position_ = new_left_wheel_position;
