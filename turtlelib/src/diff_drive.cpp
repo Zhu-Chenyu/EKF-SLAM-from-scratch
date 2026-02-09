@@ -8,13 +8,13 @@
 namespace turtlelib
 {
 DiffDrive::DiffDrive(double wheel_track, double wheel_radius)
-  : wheel_track_(wheel_track),
-    wheel_radius_(wheel_radius),
-    left_wheel_position_(0.0),
-    right_wheel_position_(0.0),
-    x_(0.0),
-    y_(0.0),
-    theta_(0.0)
+: wheel_track_(wheel_track),
+  wheel_radius_(wheel_radius),
+  left_wheel_position_(0.0),
+  right_wheel_position_(0.0),
+  x_(0.0),
+  y_(0.0),
+  theta_(0.0)
 {}
 
 void DiffDrive::forward_kinematics(double new_left_wheel_position, double new_right_wheel_position)

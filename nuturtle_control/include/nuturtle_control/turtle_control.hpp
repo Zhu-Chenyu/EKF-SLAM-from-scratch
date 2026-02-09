@@ -1,7 +1,7 @@
 #ifndef NUTURTLE_CONTROL_TURTLE_CONTROL_HPP
 #define NUTURTLE_CONTROL_TURTLE_CONTROL_HPP
 /// \file
-/// \brief A ROS2 node that subscribes to joint states and publishes odometry information for the nuturtlebot.
+/// \brief A ROS2 node that controls each wheel and reads the encoders of wheels.
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"

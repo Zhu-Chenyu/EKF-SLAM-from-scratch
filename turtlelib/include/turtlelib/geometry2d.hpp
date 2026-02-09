@@ -121,7 +121,7 @@ Vector2D operator-(const Vector2D & v1, const Vector2D & v2);
     /// \param v1 The first vector
     /// \param v2 The second vector
     /// \return The difference of the two vectors assigned to v1
-Vector2D & operator-=(Vector2D & v1, const Vector2D & v2); 
+Vector2D & operator-=(Vector2D & v1, const Vector2D & v2);
 
     /// \brief Scale a vector by a scalar
     /// \param scalar The scaling factor
@@ -150,7 +150,7 @@ double magnitude(Vector2D);
     /// \param v1 The first vector
     /// \param v2 The second vector
     /// \return The angle between the two vectors in radians
-double angle(Vector2D,Vector2D);
+double angle(Vector2D, Vector2D);
 }
 
 /// \brief A Formatter for 2D points

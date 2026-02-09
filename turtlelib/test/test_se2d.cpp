@@ -180,12 +180,12 @@ TEST_CASE("integrate_twist function")
     REQUIRE_THAT(tf_rot.translation().x, Catch::Matchers::WithinAbs(0.0, 1e-9));
     REQUIRE_THAT(tf_rot.translation().y, Catch::Matchers::WithinAbs(0.0, 1e-9));
     REQUIRE_THAT(tf_rot.rotation(), Catch::Matchers::WithinAbs(deg2rad(90.0), 1e-9));
-    
+
     Twist2D tw3{deg2rad(90.0), 1.0, 0.0}; // Rotation and translation
     Transform2D tf2 = integrate_twist(tw3);
     REQUIRE_THAT(tf2.translation().x, Catch::Matchers::WithinAbs(
-        (1.0 / deg2rad(90.0)) * (std::sin(deg2rad(90.0))), 1e-9));
+      (1.0 / deg2rad(90.0)) * (std::sin(deg2rad(90.0))), 1e-9));
     REQUIRE_THAT(tf2.translation().y, Catch::Matchers::WithinAbs(
-        (1.0 / deg2rad(90.0)) * (1 - std::cos(deg2rad(90.0))), 1e-9));
+      (1.0 / deg2rad(90.0)) * (1 - std::cos(deg2rad(90.0))), 1e-9));
     REQUIRE_THAT(tf2.rotation(), Catch::Matchers::WithinAbs(deg2rad(90.0), 1e-9));
 }

@@ -40,6 +40,15 @@ A world creator and load turtlebots in it
 | `obstacles.y` | double[] | [] | List of y coordinates for obstacles |
 | `obstacles.r` | double | 0.2 | Radius of all obstacles (meters) |
 
+# Nuturtle Control
+This package controls the real turtle robot
+* `circle.hpp` drive the robot in a circle
+* `odometry.hpp` convert joint states into odometry information
+* `turtle_control.hpp` drive wheels and get wheels positions
+
+# Nuturtle Msgs
+This package contains useful messages for the turtle robot
+
 # Launch File Details
 * `ros2 launch nuturtle_description load_one.launch.xml --show-args`
   ```bash

@@ -140,7 +140,7 @@ double magnitude(Vector2D v)
   return std::sqrt(v.x * v.x + v.y * v.y);
 }
 
-double angle(Vector2D v1,Vector2D v2)
+double angle(Vector2D v1, Vector2D v2)
 {
   if (magnitude(v1) == 0.0 || magnitude(v2) == 0.0) {
     throw std::invalid_argument("Cannot compute angle with the zero vector");

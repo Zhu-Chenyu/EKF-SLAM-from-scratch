@@ -2,7 +2,7 @@
 <launch>
     <node pkg="nuturtle_control" exec="odometry" name="odometry" on_exit="shutdown">
         <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
-        <param name="wheel_left" value="left_wheel_joint"/>
+        <param name="wheel_left" value="wheel_left_joint"/>
         <param name="wheel_right" value="wheel_right_joint"/>
     </node>
 
