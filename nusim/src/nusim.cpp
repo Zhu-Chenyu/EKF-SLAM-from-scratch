@@ -46,7 +46,7 @@ public:
         timer_ = this->create_wall_timer(
           dt_, std::bind(&NuSimulator::timer_callback, this));
 
-          // Broadcast tf between "nusim/world" and "red/base_footprint"
+        // Broadcast tf between "nusim/world" and "red/base_footprint"
         declare_parameter("x0", 0.0);
         declare_parameter("y0", 0.0);
         declare_parameter("theta0", 0.0);
@@ -59,7 +59,7 @@ public:
         tf_broadcaster_ =
           std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-          // Visualize Arena Boundary in RViz
+        // Visualize Arena Boundary in RViz
         declare_parameter("arena_x_length", 8.0);
         declare_parameter("arena_y_length", 8.0);
         auto arena_x_length = get_parameter("arena_x_length").as_double();
@@ -72,7 +72,7 @@ public:
         marker_array.markers = generate_arena_markers(arena_x_length, arena_y_length);
         wall_marker_pub_->publish(marker_array);
 
-          //Visualize Obstacles in RViz
+        //Visualize Obstacles in RViz
         obs_marker_pub_ =
           this->create_publisher<visualization_msgs::msg::MarkerArray>("~/real_obstacles", qos);
         declare_parameter("obstacles.x", std::vector<double>{});
@@ -150,6 +150,10 @@ public:
         sensor_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/fake_sensor", qos);
         sensor_noise_distribution_ = std::normal_distribution<double>(0.0, std::sqrt(basic_sensor_variance_));
 
+        // obstacles collision
+        declare_parameter("collision_radius", 0.11);
+        get_parameter("collision_radius", this->collision_radius_);
+
 
     }
 
@@ -194,6 +198,9 @@ private:
     auto max_range_ = 0.0;
     std::normal_distribution<double> sensor_noise_distribution_;
 
+    // Collision radius
+    auto collision_radius_ = 0.11;
+
     turtlelib::DiffDrive dd;
 
     // Parameters for obstacles(array of obstacles)
@@ -224,6 +231,18 @@ private:
         y_ = this->dd.get_y();
         theta_ = this->dd.get_theta();
 
+        // check collision
+        for (size_t i = 0; i < obs.x.size(); i++) {
+            auto dist_to_obs = std::hypot(obs.x.at(i) - x_, obs.y.at(i) - y_);
+            if (dist_to_obs < collision_radius_ + obs.radius) {
+                x_ = obs.x.at(i) + (collision_radius_ + obs.radius)/dist_to_obs * (x_ - obs.x.at(i));
+                y_ = obs.y.at(i) + (collision_radius_ + obs.radius)/dist_to_obs * (y_ - obs.y.at(i));
+                dd.set_x(x_);
+                dd.set_y(y_);
+                dd.set_theta(theta_);
+            }
+        }
+
         nuturtlebot_msgs::msg::SensorData sensor_msg;
         sensor_msg.left_encoder = pos_left_slip_ * encoder_ticks_per_rad_;
         sensor_msg.right_encoder = pos_right_slip_ * encoder_ticks_per_rad_;
@@ -239,7 +258,7 @@ private:
         if (timestep % 20 == 0) {
             visualization_msgs::msg::MarkerArray marker_array;
             for (size_t i = 0; i < obs.x.size(); i++) {
-                auto distance = std::sqrt(std::pow(obs.x[i] - x_, 2) + std::pow(obs.y[i] - y_, 2));
+                auto distance = std::hypot(obs.x.at(i) - x_, obs.y.at(i) - y_);
                 visualization_msgs::msg::Marker marker;
                 marker.header.stamp = this->get_clock()->now();
                 marker.header.frame_id = "red/base_footprint";
@@ -249,8 +268,8 @@ private:
                 // add marker if distance is less than max_range_ and add noise to the marker
                 if (distance < max_range_) {
                     marker.action = visualization_msgs::msg::Marker::ADD;
-                    auto dx = obs.x[i] - x_;
-                    auto dy = obs.y[i] - y_;
+                    auto dx = obs.x.at(i) - x_;
+                    auto dy = obs.y.at(i) - y_;
                     auto rel_x = std::cos(theta_) * dx + std::sin(theta_) * dy;
                     auto rel_y = -std::sin(theta_) * dx + std::cos(theta_) * dy;
                     marker.pose.position.x = rel_x + sensor_noise_distribution_(gen_);
