@@ -30,6 +30,8 @@ public:
     /// \param obs_x Vector of x positions of obstacles
     /// \param obs_y Vector of y positions of obstacles
     /// \param obs_radius Radius of the obstacles(all obstacles have the same radius)
+    /// \param basic_sensor_variance Variance of the basic sensor
+    /// \param max_range Maximum range of the basic sensor
     NuSimulator()
     : Node("nusimulator")
     {
@@ -76,7 +78,7 @@ public:
         declare_parameter("obstacles.x", std::vector<double>{});
         declare_parameter("obstacles.y", std::vector<double>{});
         declare_parameter("obstacles.r", 0.2);
-        Obstacle obs;
+        
         obs.x = get_parameter("obstacles.x").as_double_array();
         obs.y = get_parameter("obstacles.y").as_double_array();
         obs.radius = get_parameter("obstacles.r").as_double();
@@ -106,37 +108,48 @@ public:
                 marker.color.a = 1.0;
 
                 obstacle_markers.markers.push_back(marker);
-          }
-          obs_marker_pub_->publish(obstacle_markers);
+            }
+            obs_marker_pub_->publish(obstacle_markers);
 
-          declare_parameter("encoder_ticks_per_rad", 0.0);
-          get_parameter("encoder_ticks_per_rad", this->encoder_ticks_per_rad_);
+            declare_parameter("encoder_ticks_per_rad", 0.0);
+            get_parameter("encoder_ticks_per_rad", this->encoder_ticks_per_rad_);
 
-      }
+        }
 
-      declare_parameter("wheel_radius", 0.033);
-      declare_parameter("track_width", 0.16);
-      declare_parameter("motor_cmd_per_rad_sec", 0.024);
-      auto wheel_radius = get_parameter("wheel_radius").as_double();
-      auto track_width = get_parameter("track_width").as_double();
-      motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
-      dt_seconds_ = 1.0 / rate;
-      dd = turtlelib::DiffDrive(track_width, wheel_radius);
+        declare_parameter("wheel_radius", 0.033);
+        declare_parameter("track_width", 0.16);
+        declare_parameter("motor_cmd_per_rad_sec", 0.024);
+        auto wheel_radius = get_parameter("wheel_radius").as_double();
+        auto track_width = get_parameter("track_width").as_double();
+        motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
+        dt_seconds_ = 1.0 / rate;
+        dd = turtlelib::DiffDrive(track_width, wheel_radius);
 
-      cmd_sub_ = this->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
-        "red/wheel_cmd", 10, std::bind(&NuSimulator::cmd_callback, this, std::placeholders::_1));
-      sensor_pub_ = this->create_publisher<nuturtlebot_msgs::msg::SensorData>("red/sensor_data", 10);
+        cmd_sub_ = this->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
+          "red/wheel_cmd", 10, std::bind(&NuSimulator::cmd_callback, this, std::placeholders::_1));
+        sensor_pub_ = this->create_publisher<nuturtlebot_msgs::msg::SensorData>("red/sensor_data", 10);
 
-      joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("red/joint_states", 10);
+        joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("red/joint_states", 10);
 
-      //add noise to simulation
-      declare_parameter("input_noise", 0.0);
-      declare_parameter("slip_fraction", 0.0);
-      get_parameter("input_noise", this->input_noise_);
-      get_parameter("slip_fraction", this->slip_fraction_);
-      gen_(std::random_device{}());
-      wheel_noise_distribution_ = std::normal_distribution<double>(0.0, std::sqrt(input_noise_));
-      slip_distribution_ = std::uniform_real_distribution<double>(-slip_fraction_, slip_fraction_);
+        //add noise to simulation
+        declare_parameter("input_noise", 0.0);
+        declare_parameter("slip_fraction", 0.0);
+        get_parameter("input_noise", this->input_noise_);
+        get_parameter("slip_fraction", this->slip_fraction_)  ;
+        gen_(std::random_device{}());
+        wheel_noise_distribution_ = std::normal_distribution<double>(0.0, std::sqrt(input_noise_));
+        slip_distribution_ = std::uniform_real_distribution<double>(-slip_fraction_, slip_fraction_);
+
+        // lidar sensor
+        declare_parameter("basic_sensor_variance", 0.0);
+        declare_parameter("max_range", 0.0);
+        get_parameter("basic_sensor_variance", this->basic_sensor_variance_);
+        get_parameter("max_range", this->max_range_);
+
+        // sensor obstacles marker
+        sensor_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/fake_sensor", qos);
+        sensor_noise_distribution_ = std::normal_distribution<double>(0.0, std::sqrt(basic_sensor_variance_));
+
 
     }
 
@@ -147,44 +160,50 @@ private:
     auto motor_cmd_per_rad_sec_ = 0.024;
     auto encoder_ticks_per_rad_ = 0.0;
 
-      // Robot pose state
+    // Robot pose state
     double x_;
     double y_;
     double theta_;
 
-      // Initial pose for reset
+    // Initial pose for reset
     double x0_;
     double y0_;
     double theta0_;
 
-      // Wheel state
+    // Wheel state
     auto v_left_ = 0.0;
     auto v_right_ = 0.0;
     auto pos_left_ = 0.0;
     auto pos_right_ = 0.0;
 
-      // Noises
+    // Noises
     auto input_noise_ = 0.0;
     auto slip_fraction_ = 0.0;
     std::mt19937 gen_;
     std::normal_distribution<double> wheel_noise_distribution_;
     std::uniform_real_distribution<double> slip_distribution_;
 
-      // Slip
+    // Slip
     auto pos_left_slip_ = 0.0;
     auto pos_right_slip_ = 0.0;
     auto vel_left_slip_ = 0.0;
     auto vel_right_slip_ = 0.0;
 
+    // Lidar sensor
+    auto basic_sensor_variance_ = 0.0;
+    auto max_range_ = 0.0;
+    std::normal_distribution<double> sensor_noise_distribution_;
+
     turtlelib::DiffDrive dd;
 
-      // Parameters for obstacles
+    // Parameters for obstacles(array of obstacles)
     struct Obstacle
     {
         std::vector<double> x;
         std::vector<double> y;
         double radius;
     };
+    Obstacle obs;
 
     void timer_callback()
     {
@@ -216,6 +235,46 @@ private:
         joint_msg.position = {pos_left_, pos_right_};
         joint_msg.velocity = {v_left_, v_right_};
         joint_state_pub_->publish(joint_msg);
+
+        if (timestep % 20 == 0) {
+            visualization_msgs::msg::MarkerArray marker_array;
+            for (size_t i = 0; i < obs.x.size(); i++) {
+                auto distance = std::sqrt(std::pow(obs.x[i] - x_, 2) + std::pow(obs.y[i] - y_, 2));
+                visualization_msgs::msg::Marker marker;
+                marker.header.stamp = this->get_clock()->now();
+                marker.header.frame_id = "red/base_footprint";
+                marker.ns = "obstacles";
+                marker.id = i;
+                marker.type = visualization_msgs::msg::Marker::CYLINDER;
+                // add marker if distance is less than max_range_ and add noise to the marker
+                if (distance < max_range_) {
+                    marker.action = visualization_msgs::msg::Marker::ADD;
+                    auto dx = obs.x[i] - x_;
+                    auto dy = obs.y[i] - y_;
+                    auto rel_x = std::cos(theta_) * dx + std::sin(theta_) * dy;
+                    auto rel_y = -std::sin(theta_) * dx + std::cos(theta_) * dy;
+                    marker.pose.position.x = rel_x + sensor_noise_distribution_(gen_);
+                    marker.pose.position.y = rel_y + sensor_noise_distribution_(gen_);
+                    marker.pose.position.z = 0.0;
+                    marker.pose.orientation.w = 1.0;
+                    marker.scale.x = obs.radius * 2;
+                    marker.scale.y = obs.radius * 2;
+                    marker.scale.z = 0.1;
+                    marker.color.a = 1.0;
+                    marker.color.r = 1.0;
+                    marker.color.g = 0.0;
+                    marker.color.b = 0.0;
+                    marker_array.markers.push_back(marker);
+                }
+                // delete marker if distance is greater than max_range
+                else{
+                    marker.action = visualization_msgs::msg::Marker::DELETE;
+                    marker_array.markers.push_back(marker);
+                }
+            }
+            sensor_marker_pub_->publish(marker_array);
+            
+        }
     }
 
     void reset_callback(
