@@ -2,6 +2,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <cmath>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -13,6 +14,7 @@
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 #include "turtlelib/diff_drive.hpp"
+#include "turtlelib/angle.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 
 using namespace std::chrono_literals;
@@ -62,14 +64,14 @@ public:
         // Visualize Arena Boundary in RViz
         declare_parameter("arena_x_length", 8.0);
         declare_parameter("arena_y_length", 8.0);
-        auto arena_x_length = get_parameter("arena_x_length").as_double();
-        auto arena_y_length = get_parameter("arena_y_length").as_double();
+        get_parameter("arena_x_length", this->arena_x_length_);
+        get_parameter("arena_y_length", this->arena_y_length_);
         auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local();
         wall_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/real_walls",
           qos);
 
         visualization_msgs::msg::MarkerArray marker_array;
-        marker_array.markers = generate_arena_markers(arena_x_length, arena_y_length);
+        marker_array.markers = generate_arena_markers(this->arena_x_length_, this->arena_y_length_);
         wall_marker_pub_->publish(marker_array);
 
         //Visualize Obstacles in RViz
@@ -79,9 +81,9 @@ public:
         declare_parameter("obstacles.y", std::vector<double>{});
         declare_parameter("obstacles.r", 0.2);
         
-        obs.x = get_parameter("obstacles.x").as_double_array();
-        obs.y = get_parameter("obstacles.y").as_double_array();
-        obs.radius = get_parameter("obstacles.r").as_double();
+        get_parameter("obstacles.x", this->obs.x);
+        get_parameter("obstacles.y", this->obs.y);
+        get_parameter("obstacles.r", this->obs.radius);
         if (obs.x.size() != obs.y.size()) {
             RCLCPP_ERROR(this->get_logger(), "Obstacle x and y size mismatch!");
             throw std::runtime_error("Obstacle x and y size mismatch!");
@@ -132,8 +134,8 @@ public:
         joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("red/joint_states", 10);
 
         //add noise to simulation
-        declare_parameter("input_noise", 0.0);
-        declare_parameter("slip_fraction", 0.0);
+        declare_parameter("input_noise", 0.01);
+        declare_parameter("slip_fraction", 0.01);
         get_parameter("input_noise", this->input_noise_);
         get_parameter("slip_fraction", this->slip_fraction_)  ;
         gen_(std::random_device{}());
@@ -141,7 +143,7 @@ public:
         slip_distribution_ = std::uniform_real_distribution<double>(-slip_fraction_, slip_fraction_);
 
         // lidar sensor
-        declare_parameter("basic_sensor_variance", 0.0);
+        declare_parameter("basic_sensor_variance", 0.01);
         declare_parameter("max_range", 0.0);
         get_parameter("basic_sensor_variance", this->basic_sensor_variance_);
         get_parameter("max_range", this->max_range_);
@@ -153,6 +155,21 @@ public:
         // obstacles collision
         declare_parameter("collision_radius", 0.11);
         get_parameter("collision_radius", this->collision_radius_);
+
+        // laser scan
+        scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("red/scan", qos);
+        declare_parameter("scan_noise", 0.01);
+        declare_parameter("scan_angle_increment", turtlelib::deg2rad(1.0));  // 1 degree
+        declare_parameter("scan_resolution", turtlelib::deg2rad(1.0));  // 1 degree
+        declare_parameter("scan_range_min", 1.6);  // 160mm
+        declare_parameter("scan_range_max", 80.0);  // 8000mm
+        get_parameter("scan_noise", this->scan_noise_);
+        get_parameter("scan_angle_increment", this->scan_angle_increment_);
+        get_parameter("scan_resolution", this->scan_resolution_);
+        get_parameter("scan_range_min", this->scan_range_min_);
+        get_parameter("scan_range_max", this->scan_range_max_);
+        scan_noise_distribution_ = std::normal_distribution<double>(0.0, std::sqrt(scan_noise_));
+
 
 
     }
@@ -180,6 +197,12 @@ private:
     auto pos_left_ = 0.0;
     auto pos_right_ = 0.0;
 
+    // Arena
+    const double wall_thickness = 0.1;
+    const double wall_height = 0.25;
+    auto arena_x_length_ = 0.0;
+    auto arena_y_length_ = 0.0;
+
     // Noises
     auto input_noise_ = 0.0;
     auto slip_fraction_ = 0.0;
@@ -199,7 +222,15 @@ private:
     std::normal_distribution<double> sensor_noise_distribution_;
 
     // Collision radius
-    auto collision_radius_ = 0.11;
+    auto collision_radius_ = 0.0;
+
+    // Laser scan
+    auto scan_noise_ = 0.0;
+    auto scan_angle_increment_ = 0.0;
+    auto scan_resolution_ = 0.0;
+    auto scan_range_min_ = 0.0;
+    auto scan_range_max_ = 0.0;
+    std::normal_distribution<double> scan_noise_distribution_;
 
     turtlelib::DiffDrive dd;
 
@@ -256,6 +287,7 @@ private:
         joint_state_pub_->publish(joint_msg);
 
         if (timestep % 20 == 0) {
+            // publish sensor obstacles marker
             visualization_msgs::msg::MarkerArray marker_array;
             for (size_t i = 0; i < obs.x.size(); i++) {
                 auto distance = std::hypot(obs.x.at(i) - x_, obs.y.at(i) - y_);
@@ -292,7 +324,73 @@ private:
                 }
             }
             sensor_marker_pub_->publish(marker_array);
-            
+
+            // publish laser scan
+            sensor_msgs::msg::LaserScan scan;
+            scan.header.stamp = this->get_clock()->now();
+            scan.header.frame_id = "red/base_footprint";
+            scan.angle_min = -M_PI;
+            scan.angle_max = M_PI;
+            scan.angle_increment = scan_angle_increment_;
+            scan.time_increment = 0.01;
+            scan.scan_time = 0.1;
+            scan.range_min = scan_range_min_;
+            scan.range_max = scan_range_max_;
+            scan.ranges.resize((scan.angle_max - scan.angle_min) / scan.angle_increment + 1);
+            for (size_t i = 0; i < (scan.angle_max - scan.angle_min) / scan.angle_increment + 1; i++) {
+                auto laser_angle = scan.angle_min + i * scan.angle_increment + theta_;
+                auto result = std::numeric_limits<float>::infinity();
+                // for each obstacle, check if the laser beam intersects with the obstacle
+                for (size_t j = 0; j < obs.x.size(); j++) {
+                    auto dx = obs.x.at(j) - x_;
+                    auto dy = obs.y.at(j) - y_;
+                    auto dist_to_obs = std::hypot(dx, dy);
+                    if (dist_to_obs < scan_range_max_) {
+                        auto angle_to_obs = std::atan2(dy, dx);
+                        auto laser_obs_angle = std::abs(angle_to_obs - laser_angle);
+                        if (laser_obs_angle > M_PI / 2) {
+                            continue;
+                        }
+                        if (dist_to_obs * std::sin(laser_obs_angle) < obs.radius) {
+                            result = std::min(result, dist_to_obs * std::cos(laser_obs_angle) - std::sqrt(obs.radius * obs.radius - dist_to_obs * dist_to_obs * std::sin(laser_obs_angle) * std::sin(laser_obs_angle)));
+                        }
+                    }
+                }
+                // for each wall, check if the laser beam intersects with the wall
+                auto dy_up = arena_y_length_/2 - wall_thickness/2 - y_;
+                auto dy_down = -arena_y_length_/2 + wall_thickness/2 - y_;
+                auto dx_right = arena_x_length_/2 - wall_thickness/2 - x_;
+                auto dx_left = -arena_x_length_/2 + wall_thickness/2 - x_;
+                // check up wall
+                if (std::sin(laser_angle) > 0) {
+                    auto dist_up_wall = dy_up / std::sin(laser_angle);
+                    result = std::min(result, dist_up_wall);
+                }
+                // check down wall
+                if (std::sin(laser_angle) < 0) {
+                    auto dist_down_wall = dy_down / std::sin(laser_angle);
+                    result = std::min(result, dist_down_wall);
+                }
+                // check right wall
+                if (std::cos(laser_angle) > 0) {
+                    auto dist_right_wall = dx_right / std::cos(laser_angle);
+                    result = std::min(result, dist_right_wall);
+                }
+                // check left wall
+                if (std::cos(laser_angle) < 0) {
+                    auto dist_left_wall = dx_left / std::cos(laser_angle);
+                    result = std::min(result, dist_left_wall);
+                }
+
+                if (result > scan_range_max_ || result < scan_range_min_) {
+                    result = std::numeric_limits<float>::infinity();  // out of range
+                }
+                else {
+                    result += scan_noise_distribution_(gen_);  // add noise
+                }
+                scan.ranges[i] = result;
+            }
+            scan_pub_->publish(scan);
         }
     }
 
@@ -335,8 +433,7 @@ private:
         double x_length,
         double y_length)
     {
-      const double wall_thickness = 0.1;
-      const double wall_height = 0.25;
+
       std::vector<visualization_msgs::msg::Marker> markers;
         // Four walls
       std::vector<std::tuple<double, double, double, double>> walls = {
@@ -405,6 +502,7 @@ private:
     rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr cmd_sub_;
     rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_pub_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub_;
 };
 
 int main(int argc, char * argv[])
