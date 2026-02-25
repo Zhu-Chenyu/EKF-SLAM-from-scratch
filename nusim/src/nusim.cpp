@@ -36,6 +36,8 @@ public:
     /// \param obs_radius Radius of the obstacles(all obstacles have the same radius)
     /// \param basic_sensor_variance Variance of the basic sensor
     /// \param max_range Maximum range of the basic sensor
+    /// \param scan_noise Noise added to the scan
+    /// \param draw_only Only draw the arena and obstacles
     NuSimulator()
     : Node("nusimulator"),
     gen_(std::random_device{}())
@@ -136,6 +138,9 @@ public:
 
         joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("red/joint_states", 10);
 
+        declare_parameter("draw_only", false);
+        get_parameter("draw_only", this->draw_only_);
+
         //add noise to simulation
         declare_parameter("input_noise", 0.01);
         declare_parameter("slip_fraction", 0.01);
@@ -235,6 +240,8 @@ private:
     double scan_range_max_ = 0.0;
     std::normal_distribution<double> scan_noise_distribution_;
 
+    bool draw_only_ = false;
+
     turtlelib::DiffDrive dd;
 
     // Parameters for obstacles(array of obstacles)
@@ -253,6 +260,11 @@ private:
         message.data = timestep;
         // RCLCPP_INFO(this->get_logger(), "Publishing timestep: '%lu'", message.data);
         ts_publisher->publish(message);
+
+        if (draw_only_) {
+            return;
+        }
+
         broadcast_tf();
 
         pos_left_ += v_left_ * dt_seconds_;
