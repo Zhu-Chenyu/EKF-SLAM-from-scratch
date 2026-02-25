@@ -147,12 +147,12 @@ public:
 
         // lidar sensor
         declare_parameter("basic_sensor_variance", 0.01);
-        declare_parameter("max_range", 0.0);
+        declare_parameter("max_range", 2.0);
         get_parameter("basic_sensor_variance", this->basic_sensor_variance_);
         get_parameter("max_range", this->max_range_);
 
         // sensor obstacles marker
-        sensor_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/fake_sensor", qos);
+        sensor_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/fake_sensor", 10);
         sensor_noise_distribution_ = std::normal_distribution<double>(0.0, std::sqrt(basic_sensor_variance_));
 
         // obstacles collision
@@ -160,7 +160,7 @@ public:
         get_parameter("collision_radius", this->collision_radius_);
 
         // laser scan
-        scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("red/scan", qos);
+        scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("red/scan", 10);
         declare_parameter("scan_noise", 0.01);
         declare_parameter("scan_angle_increment", turtlelib::deg2rad(1.0));  // 1 degree
         declare_parameter("scan_resolution", turtlelib::deg2rad(1.0));  // 1 degree
@@ -295,7 +295,7 @@ private:
             for (size_t i = 0; i < obs.x.size(); i++) {
                 auto distance = std::hypot(obs.x.at(i) - x_, obs.y.at(i) - y_);
                 visualization_msgs::msg::Marker marker;
-                marker.header.stamp = this->get_clock()->now();
+                marker.header.stamp = rclcpp::Time(0);
                 marker.header.frame_id = "red/base_footprint";
                 marker.ns = "obstacles";
                 marker.id = i;
@@ -309,14 +309,14 @@ private:
                     auto rel_y = -std::sin(theta_) * dx + std::cos(theta_) * dy;
                     marker.pose.position.x = rel_x + sensor_noise_distribution_(gen_);
                     marker.pose.position.y = rel_y + sensor_noise_distribution_(gen_);
-                    marker.pose.position.z = 0.0;
+                    marker.pose.position.z = 0.25 / 2.0;
                     marker.pose.orientation.w = 1.0;
                     marker.scale.x = obs.radius * 2;
                     marker.scale.y = obs.radius * 2;
-                    marker.scale.z = 0.1;
+                    marker.scale.z = 0.25;
                     marker.color.a = 1.0;
                     marker.color.r = 1.0;
-                    marker.color.g = 0.0;
+                    marker.color.g = 1.0;
                     marker.color.b = 0.0;
                     marker_array.markers.push_back(marker);
                 }
