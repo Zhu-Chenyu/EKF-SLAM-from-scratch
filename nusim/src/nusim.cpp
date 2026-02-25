@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <cmath>
+#include <random>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -16,6 +17,7 @@
 #include "turtlelib/diff_drive.hpp"
 #include "turtlelib/angle.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 using namespace std::chrono_literals;
 
@@ -35,7 +37,8 @@ public:
     /// \param basic_sensor_variance Variance of the basic sensor
     /// \param max_range Maximum range of the basic sensor
     NuSimulator()
-    : Node("nusimulator")
+    : Node("nusimulator"),
+    gen_(std::random_device{}())
     {
         declare_parameter("rate", 100.0);
         auto rate = get_parameter("rate").as_double();
@@ -138,7 +141,7 @@ public:
         declare_parameter("slip_fraction", 0.01);
         get_parameter("input_noise", this->input_noise_);
         get_parameter("slip_fraction", this->slip_fraction_)  ;
-        gen_(std::random_device{}());
+        
         wheel_noise_distribution_ = std::normal_distribution<double>(0.0, std::sqrt(input_noise_));
         slip_distribution_ = std::uniform_real_distribution<double>(-slip_fraction_, slip_fraction_);
 
@@ -177,9 +180,9 @@ public:
 private:
     uint64_t timestep = 0;
     std::chrono::duration<double> dt_{0.01};
-    auto dt_seconds_ = 0.01;
-    auto motor_cmd_per_rad_sec_ = 0.024;
-    auto encoder_ticks_per_rad_ = 0.0;
+    double dt_seconds_ = 0.01;
+    double motor_cmd_per_rad_sec_ = 0.024;
+    double encoder_ticks_per_rad_ = 0.0;
 
     // Robot pose state
     double x_;
@@ -192,44 +195,44 @@ private:
     double theta0_;
 
     // Wheel state
-    auto v_left_ = 0.0;
-    auto v_right_ = 0.0;
-    auto pos_left_ = 0.0;
-    auto pos_right_ = 0.0;
+    double v_left_ = 0.0;
+    double v_right_ = 0.0;
+    double pos_left_ = 0.0;
+    double pos_right_ = 0.0;
 
     // Arena
     const double wall_thickness = 0.1;
     const double wall_height = 0.25;
-    auto arena_x_length_ = 0.0;
-    auto arena_y_length_ = 0.0;
+    double arena_x_length_ = 0.0;
+    double arena_y_length_ = 0.0;
 
     // Noises
-    auto input_noise_ = 0.0;
-    auto slip_fraction_ = 0.0;
+    double input_noise_ = 0.0;
+    double slip_fraction_ = 0.0;
     std::mt19937 gen_;
     std::normal_distribution<double> wheel_noise_distribution_;
     std::uniform_real_distribution<double> slip_distribution_;
 
     // Slip
-    auto pos_left_slip_ = 0.0;
-    auto pos_right_slip_ = 0.0;
-    auto vel_left_slip_ = 0.0;
-    auto vel_right_slip_ = 0.0;
+    double pos_left_slip_ = 0.0;
+    double pos_right_slip_ = 0.0;
+    double vel_left_slip_ = 0.0;
+    double vel_right_slip_ = 0.0;
 
     // Lidar sensor
-    auto basic_sensor_variance_ = 0.0;
-    auto max_range_ = 0.0;
+    double basic_sensor_variance_ = 0.0;
+    double max_range_ = 0.0;
     std::normal_distribution<double> sensor_noise_distribution_;
 
     // Collision radius
-    auto collision_radius_ = 0.0;
+    double collision_radius_ = 0.0;
 
     // Laser scan
-    auto scan_noise_ = 0.0;
-    auto scan_angle_increment_ = 0.0;
-    auto scan_resolution_ = 0.0;
-    auto scan_range_min_ = 0.0;
-    auto scan_range_max_ = 0.0;
+    double scan_noise_ = 0.0;
+    double scan_angle_increment_ = 0.0;
+    double scan_resolution_ = 0.0;
+    double scan_range_min_ = 0.0;
+    double scan_range_max_ = 0.0;
     std::normal_distribution<double> scan_noise_distribution_;
 
     turtlelib::DiffDrive dd;
@@ -339,7 +342,7 @@ private:
             scan.ranges.resize((scan.angle_max - scan.angle_min) / scan.angle_increment + 1);
             for (size_t i = 0; i < (scan.angle_max - scan.angle_min) / scan.angle_increment + 1; i++) {
                 auto laser_angle = scan.angle_min + i * scan.angle_increment + theta_;
-                auto result = std::numeric_limits<float>::infinity();
+                auto result = std::numeric_limits<double>::infinity();
                 // for each obstacle, check if the laser beam intersects with the obstacle
                 for (size_t j = 0; j < obs.x.size(); j++) {
                     auto dx = obs.x.at(j) - x_;
@@ -383,7 +386,7 @@ private:
                 }
 
                 if (result > scan_range_max_ || result < scan_range_min_) {
-                    result = std::numeric_limits<float>::infinity();  // out of range
+                    result = std::numeric_limits<double>::infinity();  // out of range
                 }
                 else {
                     result += scan_noise_distribution_(gen_);  // add noise
@@ -503,6 +506,7 @@ private:
     rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_pub_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr sensor_marker_pub_;
 };
 
 int main(int argc, char * argv[])
