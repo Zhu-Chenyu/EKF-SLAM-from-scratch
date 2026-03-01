@@ -7,9 +7,14 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(Armadillo REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+target_link_libraries(nuslam PUBLIC
+  Armadillo::Armadillo
+)
 
 install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME})

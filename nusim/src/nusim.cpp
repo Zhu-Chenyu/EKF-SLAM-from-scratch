@@ -169,7 +169,7 @@ public:
         declare_parameter("scan_noise", 0.01);
         declare_parameter("scan_angle_increment", turtlelib::deg2rad(1.0));  // 1 degree
         declare_parameter("scan_resolution", turtlelib::deg2rad(1.0));  // 1 degree
-        declare_parameter("scan_range_min", 1.6);  // 160mm
+        declare_parameter("scan_range_min", 0.16);  // 160mm
         declare_parameter("scan_range_max", 80.0);  // 8000mm
         get_parameter("scan_noise", this->scan_noise_);
         get_parameter("scan_angle_increment", this->scan_angle_increment_);
@@ -290,14 +290,14 @@ private:
         }
 
         nuturtlebot_msgs::msg::SensorData sensor_msg;
-        sensor_msg.left_encoder = pos_left_slip_ * encoder_ticks_per_rad_;
-        sensor_msg.right_encoder = pos_right_slip_ * encoder_ticks_per_rad_;
+        sensor_msg.left_encoder = pos_left_ * encoder_ticks_per_rad_;
+        sensor_msg.right_encoder = pos_right_ * encoder_ticks_per_rad_;
         sensor_pub_->publish(sensor_msg);
 
         sensor_msgs::msg::JointState joint_msg;
         joint_msg.header.stamp = this->get_clock()->now();
         joint_msg.name = {"wheel_left_joint", "wheel_right_joint"};
-        joint_msg.position = {pos_left_, pos_right_};
+        joint_msg.position = {pos_left_slip_, pos_right_slip_};
         joint_msg.velocity = {v_left_, v_right_};
         joint_state_pub_->publish(joint_msg);
 
@@ -347,8 +347,8 @@ private:
             scan.angle_min = -M_PI;
             scan.angle_max = M_PI;
             scan.angle_increment = scan_angle_increment_;
-            scan.time_increment = 0.01;
-            scan.scan_time = 0.1;
+            scan.time_increment = 0.0;
+            scan.scan_time = 20.0 * dt_seconds_;
             scan.range_min = scan_range_min_;
             scan.range_max = scan_range_max_;
             scan.ranges.resize((scan.angle_max - scan.angle_min) / scan.angle_increment + 1);
@@ -502,8 +502,8 @@ private:
         if (v_right_ != 0){
           v_right_ += wheel_noise_distribution_(gen_);
         }
-        vel_left_slip_ = v_left_ * (1 + slip_distribution_(gen_));
-        vel_right_slip_ = v_right_ * (1 + slip_distribution_(gen_));
+        vel_left_slip_ = v_left_ * slip_distribution_(gen_);
+        vel_right_slip_ = v_right_ * slip_distribution_(gen_);
 
     }
 
