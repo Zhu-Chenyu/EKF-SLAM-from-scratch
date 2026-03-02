@@ -7,3 +7,4 @@
     x0: -0.6
     y0: 0.3
     theta0: 1.28
+    basic_sensor_variance: 0.001

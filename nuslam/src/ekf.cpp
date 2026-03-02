@@ -1,20 +1,39 @@
 #include "ekf.hpp"
 #include "turtlelib/angle.hpp"
+#undef pi  // angle.hpp defines pi as a macro which conflicts with arma::Datum<T>::pi
 
 void EKF::predict(std::vector<double> action) {
     auto theta = state_[0];
     state_[0] = turtlelib::normalize_angle(state_[0] + action[0]);
-    state_[1] += -action[1] / action[0] * std::sin(theta) + action[1] * std::sin(theta + action[0]) / action[0];
-    state_[2] += action[1] / action[0] * std::cos(theta) - action[1] * std::cos(theta + action[0]) / action[0];
     arma::mat A_mat(3 + 2 * obs_num_, 3 + 2 * obs_num_, arma::fill::eye);
-    A_mat(1, 0) = -action[1] / action[0] * std::cos(theta) + action[1] * std::cos(theta + action[0]) / action[0];
-    A_mat(2, 0) = -action[1] / action[0] * std::sin(theta) + action[1] * std::sin(theta + action[0]) / action[0];
-    zegma_ = A_mat * zegma_ * A_mat.t() + arma::eye(3 + 2 * obs_num_, 3 + 2 * obs_num_) * process_noise_variance_;
+    if (std::abs(action[0]) < 1e-10) {
+        // Pure translation (straight line)
+        state_[1] += action[1] * std::cos(theta);
+        state_[2] += action[1] * std::sin(theta);
+        A_mat(1, 0) = -action[1] * std::sin(theta);
+        A_mat(2, 0) =  action[1] * std::cos(theta);
+    } else {
+        // Arc motion
+        state_[1] += action[1] / action[0] * (-std::sin(theta) + std::sin(theta + action[0]));
+        state_[2] += action[1] / action[0] * ( std::cos(theta) - std::cos(theta + action[0]));
+        A_mat(1, 0) = action[1] / action[0] * (-std::cos(theta) + std::cos(theta + action[0]));
+        A_mat(2, 0) = action[1] / action[0] * (-std::sin(theta) + std::sin(theta + action[0]));
+    }
+    // Process noise only on robot pose (top-left 3x3); landmarks are static
+    arma::mat Q(3 + 2 * obs_num_, 3 + 2 * obs_num_, arma::fill::zeros);
+    Q(0, 0) = process_noise_variance_;
+    Q(1, 1) = process_noise_variance_;
+    Q(2, 2) = process_noise_variance_;
+    zegma_ = A_mat * zegma_ * A_mat.t() + Q;
 }
 
 void EKF::update(int id, double dist_obs, double angle_obs) {
-    state_[3 + 2*id] = state_[1] + dist_obs * std::cos(angle_obs + state_[0]);
-    state_[4 + 2*id] = state_[2] + dist_obs * std::sin(angle_obs + state_[0]);
+    if (!seen_[id]) {
+        // Initialize landmark position from first measurement
+        state_[3 + 2*id] = state_[1] + dist_obs * std::cos(angle_obs + state_[0]);
+        state_[4 + 2*id] = state_[2] + dist_obs * std::sin(angle_obs + state_[0]);
+        seen_[id] = true;
+    }
     arma::mat H_mat(2, 3 + 2 * obs_num_, arma::fill::zeros);
     auto del_x = state_[3 + 2*id] - state_[1]; // estimated relative x position
     auto del_y = state_[4 + 2*id] - state_[2]; // estimated relative y position

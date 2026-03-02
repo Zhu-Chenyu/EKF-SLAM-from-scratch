@@ -1,14 +1,23 @@
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "nav_msgs/msg/path.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "tf2_ros/transform_broadcaster.h"
+#include "turtlelib/se2d.hpp"
+#undef pi  // angle.hpp defines pi as a macro which conflicts with arma::Datum<T>::pi
 #include "ekf.hpp"
 
 
 class SLAM : public rclcpp::Node {
     public:
         SLAM() : Node("nuslam") {
-            odom_sub_ = declare_subscription<nav_msgs::msg::Odometry>("odom", 10, std::bind(&SLAM::odom_callback, this, std::placeholders::_1));
-            sensor_marker_sub_ = declare_subscription<visualization_msgs::msg::MarkerArray>("sensor_data", 10, std::bind(&SLAM::sensor_data_callback, this, std::placeholders::_1));
+            odom_sub_ = create_subscription<nav_msgs::msg::Odometry>("odom", 10, std::bind(&SLAM::odom_callback, this, std::placeholders::_1));
+            sensor_marker_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>("sensor_data", 10, std::bind(&SLAM::sensor_data_callback, this, std::placeholders::_1));
+            tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+            path_pub_ = create_publisher<nav_msgs::msg::Path>("slam_path", 10);
+            slam_path_.header.frame_id = "map";
         }
 
     private:
@@ -43,10 +52,24 @@ class SLAM : public rclcpp::Node {
             prev_x_ = x_;
             prev_y_ = y_;
             prev_theta_ = theta_;
+
+            // append to path and publish
+            geometry_msgs::msg::PoseStamped pose;
+            pose.header.stamp = this->now();
+            pose.header.frame_id = "map";
+            pose.pose.position.x = ekf_.get_x();
+            pose.pose.position.y = ekf_.get_y();
+            pose.pose.orientation.z = std::sin(ekf_.get_theta() / 2.0);
+            pose.pose.orientation.w = std::cos(ekf_.get_theta() / 2.0);
+            slam_path_.header.stamp = this->now();
+            slam_path_.poses.push_back(pose);
+            path_pub_->publish(slam_path_);
+
+            publish_transforms();
         }
 
         void sensor_data_callback(const visualization_msgs::msg::MarkerArray::SharedPtr msg) {
-            for (int i = 0; i < msg->markers.size(); i++) {
+            for (int i = 0; i < int(msg->markers.size()); i++) {
                 if (msg->markers[i].action == visualization_msgs::msg::Marker::ADD) {
                     sensor_markers_[i] = msg->markers[i];
 
@@ -55,15 +78,62 @@ class SLAM : public rclcpp::Node {
                     double obs_y = msg->markers[i].pose.position.y;
                     double dist_obs = std::hypot(obs_x, obs_y);
                     double angle_obs = std::atan2(obs_y, obs_x);
-                    ekf_.update(i, dist_obs, angle_obs);
+                    ekf_.update(msg->markers[i].id, dist_obs, angle_obs);
                 }
                 else if (msg->markers[i].action == visualization_msgs::msg::Marker::DELETE) {
                     sensor_markers_[i] = visualization_msgs::msg::Marker();
                 }
             }
+            publish_transforms();
+        }
+
+        void publish_transforms() {
+            auto stamp = this->now();
+
+            // T_map_odom = T_map_base * T_odom_base^{-1}
+            // so that map->odom->base_footprint chains to the EKF estimate
+            turtlelib::Transform2D T_map_base(
+                turtlelib::Vector2D{ekf_.get_x(), ekf_.get_y()}, ekf_.get_theta());
+            turtlelib::Transform2D T_odom_base(
+                turtlelib::Vector2D{x_, y_}, theta_);
+            turtlelib::Transform2D T_map_odom = T_map_base * T_odom_base.inv();
+            auto trans = T_map_odom.translation();
+            auto rot   = T_map_odom.rotation();
+
+            geometry_msgs::msg::TransformStamped tf_map_odom;
+            tf_map_odom.header.stamp = stamp;
+            tf_map_odom.header.frame_id = "map";
+            tf_map_odom.child_frame_id = "odom";
+            tf_map_odom.transform.translation.x = trans.x;
+            tf_map_odom.transform.translation.y = trans.y;
+            tf_map_odom.transform.translation.z = 0.0;
+            tf_map_odom.transform.rotation.x = 0.0;
+            tf_map_odom.transform.rotation.y = 0.0;
+            tf_map_odom.transform.rotation.z = std::sin(rot / 2.0);
+            tf_map_odom.transform.rotation.w = std::cos(rot / 2.0);
+
+            // map → blue/base_footprint: raw uncorrected odometry
+            // shows where the robot thinks it is WITHOUT SLAM correction
+            geometry_msgs::msg::TransformStamped tf_map_blue;
+            tf_map_blue.header.stamp = stamp;
+            tf_map_blue.header.frame_id = "nusim/world";
+            tf_map_blue.child_frame_id = "blue/base_footprint";
+            tf_map_blue.transform.translation.x = x_;
+            tf_map_blue.transform.translation.y = y_;
+            tf_map_blue.transform.translation.z = 0.0;
+            tf_map_blue.transform.rotation.x = 0.0;
+            tf_map_blue.transform.rotation.y = 0.0;
+            tf_map_blue.transform.rotation.z = std::sin(theta_ / 2.0);
+            tf_map_blue.transform.rotation.w = std::cos(theta_ / 2.0);
+
+            tf_broadcaster_->sendTransform(tf_map_odom);
+            tf_broadcaster_->sendTransform(tf_map_blue);
         }
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
         rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr sensor_marker_sub_;
+        rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+        std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+        nav_msgs::msg::Path slam_path_;
 };
 
 int main(int argc, char ** argv)

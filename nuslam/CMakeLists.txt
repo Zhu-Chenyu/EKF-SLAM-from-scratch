@@ -8,29 +8,43 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(Armadillo REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(turtlelib REQUIRED)
 
-add_executable(nuslam src/slam.cpp)
-add_executable(ekf src/ekf.cpp)
+include_directories(include)
 
+# EKF as a library
+add_library(ekf_lib src/ekf.cpp)
+target_include_directories(ekf_lib PUBLIC include include/nuslam ${ARMADILLO_INCLUDE_DIRS})
+target_link_libraries(ekf_lib PUBLIC
+  ${ARMADILLO_LIBRARIES}
+  turtlelib::turtlelib
+)
+
+# SLAM node
+add_executable(nuslam src/nuslam.cpp)
 target_link_libraries(nuslam PUBLIC
-  Armadillo::Armadillo
-  nuslam::ekf
+  rclcpp::rclcpp
+  ${nav_msgs_TARGETS}
+  ${visualization_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  tf2_ros::tf2_ros
+  ekf_lib
 )
 
 install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME})
 
+install(TARGETS nuslam ekf_lib
+  DESTINATION lib/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
   set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
