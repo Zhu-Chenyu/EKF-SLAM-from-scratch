@@ -169,8 +169,8 @@ public:
         declare_parameter("scan_noise", 0.01);
         declare_parameter("scan_angle_increment", turtlelib::deg2rad(1.0));  // 1 degree
         declare_parameter("scan_resolution", turtlelib::deg2rad(1.0));  // 1 degree
-        declare_parameter("scan_range_min", 0.16);  // 160mm
-        declare_parameter("scan_range_max", 80.0);  // 8000mm
+        declare_parameter("scan_range_min", 0.12);  // 120mm
+        declare_parameter("scan_range_max", 3.5);  // 3500mm
         get_parameter("scan_noise", this->scan_noise_);
         get_parameter("scan_angle_increment", this->scan_angle_increment_);
         get_parameter("scan_resolution", this->scan_resolution_);

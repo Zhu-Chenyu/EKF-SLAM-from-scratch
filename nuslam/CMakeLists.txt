@@ -12,8 +12,12 @@ find_package(Armadillo REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+add_executable(nuslam src/slam.cpp)
+add_executable(ekf src/ekf.cpp)
+
 target_link_libraries(nuslam PUBLIC
   Armadillo::Armadillo
+  nuslam::ekf
 )
 
 install(DIRECTORY launch config
