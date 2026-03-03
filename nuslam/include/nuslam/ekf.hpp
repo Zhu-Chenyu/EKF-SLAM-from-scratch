@@ -26,7 +26,7 @@ private:
     arma::mat zegma_; // covariance matrix
     arma::mat k_; // Kalman gain
     double process_noise_variance_ = 0.01;
-    double sensor_noise_variance_ = 0.001;
+    double sensor_noise_variance_ = 0.5;
 
 };
 

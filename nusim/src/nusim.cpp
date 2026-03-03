@@ -6,6 +6,8 @@
 #include <random>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav_msgs/msg/path.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/u_int64.hpp"
 #include "std_srvs/srv/empty.hpp"
@@ -164,6 +166,10 @@ public:
         declare_parameter("collision_radius", 0.11);
         get_parameter("collision_radius", this->collision_radius_);
 
+        // ground truth path
+        ground_truth_pub_ = this->create_publisher<nav_msgs::msg::Path>("ground_truth", 10);
+        ground_truth_path_.header.frame_id = "nusim/world";
+
         // laser scan
         scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("red/scan", 10);
         declare_parameter("scan_noise", 0.01);
@@ -266,6 +272,22 @@ private:
         }
 
         broadcast_tf();
+
+        // ground truth path
+        geometry_msgs::msg::PoseStamped gt_pose;
+        gt_pose.header.stamp = this->get_clock()->now();
+        gt_pose.header.frame_id = "nusim/world";
+        gt_pose.pose.position.x = x_;
+        gt_pose.pose.position.y = y_;
+        tf2::Quaternion q_gt;
+        q_gt.setRPY(0, 0, theta_);
+        gt_pose.pose.orientation.x = q_gt.x();
+        gt_pose.pose.orientation.y = q_gt.y();
+        gt_pose.pose.orientation.z = q_gt.z();
+        gt_pose.pose.orientation.w = q_gt.w();
+        ground_truth_path_.header.stamp = this->get_clock()->now();
+        ground_truth_path_.poses.push_back(gt_pose);
+        ground_truth_pub_->publish(ground_truth_path_);
 
         pos_left_ += v_left_ * dt_seconds_;
         pos_right_ += v_right_ * dt_seconds_;
@@ -492,9 +514,9 @@ private:
         double v_left_raw = msg->left_velocity;
         double v_right_raw = msg->right_velocity;
 
-        // The velocity commands are given in the range [-265, 265], which corresponds to [-2.84, 2.84] in the raw command values.
-        v_left_ = v_left_raw / 265.0 * 2.84;
-        v_right_ = v_right_raw / 265.0 * 2.84;
+        // Convert motor commands to wheel angular velocities using motor_cmd_per_rad_sec parameter
+        v_left_ = v_left_raw * motor_cmd_per_rad_sec_;
+        v_right_ = v_right_raw * motor_cmd_per_rad_sec_;
 
         if (v_left_ != 0){
           v_left_ += wheel_noise_distribution_(gen_);
@@ -519,6 +541,8 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
     rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr sensor_marker_pub_;
+    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr ground_truth_pub_;
+    nav_msgs::msg::Path ground_truth_path_;
 };
 
 int main(int argc, char * argv[])

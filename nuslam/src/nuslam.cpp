@@ -18,6 +18,8 @@ class SLAM : public rclcpp::Node {
             tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
             path_pub_ = create_publisher<nav_msgs::msg::Path>("slam_path", 10);
             slam_path_.header.frame_id = "map";
+            odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("odom_measurement", 10);
+            odom_path_.header.frame_id = "map";
         }
 
     private:
@@ -53,17 +55,31 @@ class SLAM : public rclcpp::Node {
             prev_y_ = y_;
             prev_theta_ = theta_;
 
-            // append to path and publish
+            auto now = this->now();
+
+            // SLAM estimated path
             geometry_msgs::msg::PoseStamped pose;
-            pose.header.stamp = this->now();
+            pose.header.stamp = now;
             pose.header.frame_id = "map";
             pose.pose.position.x = ekf_.get_x();
             pose.pose.position.y = ekf_.get_y();
             pose.pose.orientation.z = std::sin(ekf_.get_theta() / 2.0);
             pose.pose.orientation.w = std::cos(ekf_.get_theta() / 2.0);
-            slam_path_.header.stamp = this->now();
+            slam_path_.header.stamp = now;
             slam_path_.poses.push_back(pose);
             path_pub_->publish(slam_path_);
+
+            // Odometry (uncorrected) path
+            geometry_msgs::msg::PoseStamped odom_pose;
+            odom_pose.header.stamp = now;
+            odom_pose.header.frame_id = "map";
+            odom_pose.pose.position.x = x_;
+            odom_pose.pose.position.y = y_;
+            odom_pose.pose.orientation.z = std::sin(theta_ / 2.0);
+            odom_pose.pose.orientation.w = std::cos(theta_ / 2.0);
+            odom_path_.header.stamp = now;
+            odom_path_.poses.push_back(odom_pose);
+            odom_path_pub_->publish(odom_path_);
 
             publish_transforms();
         }
@@ -132,8 +148,10 @@ class SLAM : public rclcpp::Node {
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
         rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr sensor_marker_sub_;
         rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+        rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub_;
         std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
         nav_msgs::msg::Path slam_path_;
+        nav_msgs::msg::Path odom_path_;
 };
 
 int main(int argc, char ** argv)
