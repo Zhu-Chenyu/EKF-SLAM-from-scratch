@@ -49,6 +49,12 @@ This package controls the real turtle robot
 # Nuturtle Msgs
 This package contains useful messages for the turtle robot
 
+# Nuslam
+This package implements extended kalman filter that corrects odometry data based on sensor data
+* `ekf.hpp` defines the class of extended kalman filter, including predict and update function
+* `nuslam.cpp` calls kalman filter periodically and visualize the corrected robot pose in rviz
+![](images/kalmanfilter.png)
+
 # Launch File Details
 * `ros2 launch nuturtle_description load_one.launch.xml --show-args`
   ```bash
@@ -86,7 +92,31 @@ This package contains useful messages for the turtle robot
         One of: ['red', 'green', 'blue', 'purple']
         (default: 'purple')
   ```
-  
+* `ros2 launch nuslam slam.launch.xml`
+  ```bash
+  Arguments (pass arguments as '<name>:=<value>'):
+
+    'robot':
+        no description given
+        (default: 'nusim')
+
+    'cmd_src':
+        no description given
+        (default: 'teleop')
+
+    'use_rviz':
+        Open rviz
+        (default: 'true')
+
+    'use_jsp':
+        Use joint state publisher
+        (default: 'true')
+
+    'color':
+        One of: ['red', 'green', 'blue', 'purple']
+        (default: 'purple')
+  ```
+
   [](https://github.com/user-attachments/assets/7a3695a2-e658-4960-9db1-97ebaf027cb2)
 
 
