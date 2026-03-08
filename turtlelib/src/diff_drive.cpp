@@ -30,18 +30,18 @@ void DiffDrive::forward_kinematics(double new_left_wheel_position, double new_ri
 
   if (std::abs(d_theta) < 1e-10) {
     // Pure translation (straight line)
-    this->x_ += d_center * std::cos(this->theta_);
-    this->y_ += d_center * std::sin(this->theta_);
+    x_ += d_center * std::cos(theta_);
+    y_ += d_center * std::sin(theta_);
   } else {
     // Arc motion
     double R = d_center / d_theta;
-    this->x_ += R * (std::sin(this->theta_ + d_theta) - std::sin(this->theta_));
-    this->y_ += -R * (std::cos(this->theta_ + d_theta) - std::cos(this->theta_));
+    x_ += R * (std::sin(theta_ + d_theta) - std::sin(theta_));
+    y_ += -R * (std::cos(theta_ + d_theta) - std::cos(theta_));
   }
-  this->theta_ = normalize_angle(this->theta_ + d_theta);
+  theta_ = normalize_angle(theta_ + d_theta);
 
-  this->left_wheel_position_ = new_left_wheel_position;
-  this->right_wheel_position_ = new_right_wheel_position;
+  left_wheel_position_ = new_left_wheel_position;
+  right_wheel_position_ = new_right_wheel_position;
 }
 
 std::pair<double, double> DiffDrive::inverse_kinematics(const turtlelib::Twist2D & twist) const

@@ -47,7 +47,7 @@ TurtleControl::TurtleControl()
     return;
   }
 
-  dd = turtlelib::DiffDrive(track_width_, wheel_radius_);
+  dd_ = turtlelib::DiffDrive(track_width_, wheel_radius_);
   prev_time_ = this->now();
 }
 
@@ -59,7 +59,7 @@ void TurtleControl::twist_callback(const geometry_msgs::msg::Twist::SharedPtr ms
   twist.y = msg->linear.y;
   twist.omega = msg->angular.z;
 
-  auto [left_wheel_speed, right_wheel_speed] = this->dd.inverse_kinematics(twist);
+  auto [left_wheel_speed, right_wheel_speed] = dd_.inverse_kinematics(twist);
 
   int left_motor_cmd = static_cast<int>(left_wheel_speed / motor_cmd_per_rad_sec_);
   int right_motor_cmd = static_cast<int>(right_wheel_speed / motor_cmd_per_rad_sec_);

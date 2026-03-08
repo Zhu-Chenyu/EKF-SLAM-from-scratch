@@ -22,7 +22,7 @@ private:
     /// \brief Callback function for sensor data messages. Updates the robot's pose based on encoder readings and publishes joint states.
     /// \param msg - the incoming sensor data message containing encoder readings for the left and right
   void sensor_callback(const nuturtlebot_msgs::msg::SensorData::SharedPtr msg);
-  turtlelib::DiffDrive dd;
+  turtlelib::DiffDrive dd_;
   rclcpp::Time prev_time_ = this->now();
   double prev_left_wheel_pos_ = 0.0;
   double prev_right_wheel_pos_ = 0.0;

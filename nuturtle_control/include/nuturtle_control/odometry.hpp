@@ -34,7 +34,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_publisher_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr odom_service_;
-  turtlelib::DiffDrive dd;
+  turtlelib::DiffDrive dd_;
   std::string body_id_;
   std::string odom_id_;
   std::string wheel_left_ = "left_wheel_joint";

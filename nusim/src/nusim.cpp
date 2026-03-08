@@ -88,16 +88,16 @@ public:
         declare_parameter("obstacles.y", std::vector<double>{});
         declare_parameter("obstacles.r", 0.2);
         
-        get_parameter("obstacles.x", this->obs.x);
-        get_parameter("obstacles.y", this->obs.y);
-        get_parameter("obstacles.r", this->obs.radius);
-        if (obs.x.size() != obs.y.size()) {
+        get_parameter("obstacles.x", this->obs_.x);
+        get_parameter("obstacles.y", this->obs_.y);
+        get_parameter("obstacles.r", this->obs_.radius);
+        if (obs_.x.size() != obs_.y.size()) {
             RCLCPP_ERROR(this->get_logger(), "Obstacle x and y size mismatch!");
             throw std::runtime_error("Obstacle x and y size mismatch!");
         } else {
             visualization_msgs::msg::MarkerArray obstacle_markers;
             int id = 0;
-            for (size_t i = 0; i < obs.x.size(); i++) {
+            for (size_t i = 0; i < obs_.x.size(); i++) {
                 visualization_msgs::msg::Marker marker;
                 marker.header.frame_id = "nusim/world";
                 marker.header.stamp = this->get_clock()->now();
@@ -105,11 +105,11 @@ public:
                 marker.id = id++;
                 marker.type = visualization_msgs::msg::Marker::CYLINDER;
                 marker.action = visualization_msgs::msg::Marker::ADD;
-                marker.pose.position.x = obs.x.at(i);
-                marker.pose.position.y = obs.y.at(i);
+                marker.pose.position.x = obs_.x.at(i);
+                marker.pose.position.y = obs_.y.at(i);
                 marker.pose.position.z = 0.25 / 2.0;
-                marker.scale.x = obs.radius * 2;
-                marker.scale.y = obs.radius * 2;
+                marker.scale.x = obs_.radius * 2;
+                marker.scale.y = obs_.radius * 2;
                 marker.scale.z = 0.25;
                 marker.color.r = 1.0;
                 marker.color.g = 0.0;
@@ -132,7 +132,7 @@ public:
         auto track_width = get_parameter("track_width").as_double();
         motor_cmd_per_rad_sec_ = get_parameter("motor_cmd_per_rad_sec").as_double();
         dt_seconds_ = 1.0 / rate;
-        dd = turtlelib::DiffDrive(track_width, wheel_radius);
+        dd_ = turtlelib::DiffDrive(track_width, wheel_radius);
 
         cmd_sub_ = this->create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
           "red/wheel_cmd", 10, std::bind(&NuSimulator::cmd_callback, this, std::placeholders::_1));
@@ -248,7 +248,7 @@ private:
 
     bool draw_only_ = false;
 
-    turtlelib::DiffDrive dd;
+    turtlelib::DiffDrive dd_;
 
     // Parameters for obstacles(array of obstacles)
     struct Obstacle
@@ -257,14 +257,13 @@ private:
         std::vector<double> y;
         double radius;
     };
-    Obstacle obs;
+    Obstacle obs_;
 
     void timer_callback()
     {
         timestep++;
         auto message = std_msgs::msg::UInt64();
         message.data = timestep;
-        // RCLCPP_INFO(this->get_logger(), "Publishing timestep: '%lu'", message.data);
         ts_publisher->publish(message);
 
         if (draw_only_) {
@@ -294,20 +293,20 @@ private:
         pos_left_slip_ += vel_left_slip_ * dt_seconds_;
         pos_right_slip_ += vel_right_slip_ * dt_seconds_;
 
-        this->dd.forward_kinematics(pos_left_, pos_right_);
-        x_ = this->dd.get_x();
-        y_ = this->dd.get_y();
-        theta_ = this->dd.get_theta();
+        dd_.forward_kinematics(pos_left_, pos_right_);
+        x_ = dd_.get_x();
+        y_ = dd_.get_y();
+        theta_ = dd_.get_theta();
 
         // check collision
-        for (size_t i = 0; i < obs.x.size(); i++) {
-            auto dist_to_obs = std::hypot(obs.x.at(i) - x_, obs.y.at(i) - y_);
-            if (dist_to_obs < collision_radius_ + obs.radius) {
-                x_ = obs.x.at(i) + (collision_radius_ + obs.radius)/dist_to_obs * (x_ - obs.x.at(i));
-                y_ = obs.y.at(i) + (collision_radius_ + obs.radius)/dist_to_obs * (y_ - obs.y.at(i));
-                dd.set_x(x_);
-                dd.set_y(y_);
-                dd.set_theta(theta_);
+        for (size_t i = 0; i < obs_.x.size(); i++) {
+            auto dist_to_obs = std::hypot(obs_.x.at(i) - x_, obs_.y.at(i) - y_);
+            if (dist_to_obs < collision_radius_ + obs_.radius) {
+                x_ = obs_.x.at(i) + (collision_radius_ + obs_.radius)/dist_to_obs * (x_ - obs_.x.at(i));
+                y_ = obs_.y.at(i) + (collision_radius_ + obs_.radius)/dist_to_obs * (y_ - obs_.y.at(i));
+                dd_.set_x(x_);
+                dd_.set_y(y_);
+                dd_.set_theta(theta_);
             }
         }
 
@@ -326,8 +325,8 @@ private:
         if (timestep % 20 == 0) {
             // publish sensor obstacles marker
             visualization_msgs::msg::MarkerArray marker_array;
-            for (size_t i = 0; i < obs.x.size(); i++) {
-                auto distance = std::hypot(obs.x.at(i) - x_, obs.y.at(i) - y_);
+            for (size_t i = 0; i < obs_.x.size(); i++) {
+                auto distance = std::hypot(obs_.x.at(i) - x_, obs_.y.at(i) - y_);
                 visualization_msgs::msg::Marker marker;
                 marker.header.stamp = rclcpp::Time(0);
                 marker.header.frame_id = "red/base_footprint";
@@ -337,16 +336,16 @@ private:
                 // add marker if distance is less than max_range_ and add noise to the marker
                 if (distance < max_range_) {
                     marker.action = visualization_msgs::msg::Marker::ADD;
-                    auto dx = obs.x.at(i) - x_;
-                    auto dy = obs.y.at(i) - y_;
+                    auto dx = obs_.x.at(i) - x_;
+                    auto dy = obs_.y.at(i) - y_;
                     auto rel_x = std::cos(theta_) * dx + std::sin(theta_) * dy;
                     auto rel_y = -std::sin(theta_) * dx + std::cos(theta_) * dy;
                     marker.pose.position.x = rel_x + sensor_noise_distribution_(gen_);
                     marker.pose.position.y = rel_y + sensor_noise_distribution_(gen_);
                     marker.pose.position.z = 0.25 / 2.0;
                     marker.pose.orientation.w = 1.0;
-                    marker.scale.x = obs.radius * 2;
-                    marker.scale.y = obs.radius * 2;
+                    marker.scale.x = obs_.radius * 2;
+                    marker.scale.y = obs_.radius * 2;
                     marker.scale.z = 0.25;
                     marker.color.a = 1.0;
                     marker.color.r = 1.0;
@@ -378,9 +377,9 @@ private:
                 auto laser_angle = scan.angle_min + i * scan.angle_increment + theta_;
                 auto result = std::numeric_limits<double>::infinity();
                 // for each obstacle, check if the laser beam intersects with the obstacle
-                for (size_t j = 0; j < obs.x.size(); j++) {
-                    auto dx = obs.x.at(j) - x_;
-                    auto dy = obs.y.at(j) - y_;
+                for (size_t j = 0; j < obs_.x.size(); j++) {
+                    auto dx = obs_.x.at(j) - x_;
+                    auto dy = obs_.y.at(j) - y_;
                     auto dist_to_obs = std::hypot(dx, dy);
                     if (dist_to_obs < scan_range_max_) {
                         auto angle_to_obs = std::atan2(dy, dx);
@@ -388,8 +387,8 @@ private:
                         if (laser_obs_angle > M_PI / 2) {
                             continue;
                         }
-                        if (dist_to_obs * std::sin(laser_obs_angle) < obs.radius) {
-                            result = std::min(result, dist_to_obs * std::cos(laser_obs_angle) - std::sqrt(obs.radius * obs.radius - dist_to_obs * dist_to_obs * std::sin(laser_obs_angle) * std::sin(laser_obs_angle)));
+                        if (dist_to_obs * std::sin(laser_obs_angle) < obs_.radius) {
+                            result = std::min(result, dist_to_obs * std::cos(laser_obs_angle) - std::sqrt(obs_.radius * obs_.radius - dist_to_obs * dist_to_obs * std::sin(laser_obs_angle) * std::sin(laser_obs_angle)));
                         }
                     }
                 }
@@ -425,7 +424,7 @@ private:
                 else {
                     result += scan_noise_distribution_(gen_);  // add noise
                 }
-                scan.ranges[i] = result;
+                scan.ranges.at(i) = result;
             }
             scan_pub_->publish(scan);
         }

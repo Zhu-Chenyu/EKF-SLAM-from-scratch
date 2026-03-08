@@ -8,3 +8,5 @@
     y0: 0.3
     theta0: 1.28
     basic_sensor_variance: 0.001
+    input_noise: 0.001
+    slip_fraction: 0.01

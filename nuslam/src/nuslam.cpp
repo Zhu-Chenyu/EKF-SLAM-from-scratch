@@ -12,6 +12,7 @@
 
 class SLAM : public rclcpp::Node {
     public:
+        /// \brief Constructor for SLAM
         SLAM() : Node("nuslam") {
             odom_sub_ = create_subscription<nav_msgs::msg::Odometry>("odom", 10, std::bind(&SLAM::odom_callback, this, std::placeholders::_1));
             sensor_marker_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>("sensor_data", 10, std::bind(&SLAM::sensor_data_callback, this, std::placeholders::_1));
@@ -40,9 +41,10 @@ class SLAM : public rclcpp::Node {
         EKF ekf_ = EKF(obs_num);
 
         // marker list
-        visualization_msgs::msg::Marker sensor_markers_[10];
+        std::vector<visualization_msgs::msg::Marker> sensor_markers_ = std::vector<visualization_msgs::msg::Marker>(10);
 
-
+        /// \brief Callback function for odometry
+        /// \param msg Odometry message
         void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
             x_ = msg->pose.pose.position.x;
             y_ = msg->pose.pose.position.y;
@@ -84,25 +86,28 @@ class SLAM : public rclcpp::Node {
             publish_transforms();
         }
 
+        /// \brief Callback function for sensor data
+        /// \param msg Sensor data message
         void sensor_data_callback(const visualization_msgs::msg::MarkerArray::SharedPtr msg) {
             for (int i = 0; i < int(msg->markers.size()); i++) {
-                if (msg->markers[i].action == visualization_msgs::msg::Marker::ADD) {
-                    sensor_markers_[i] = msg->markers[i];
+                if (msg->markers.at(i).action == visualization_msgs::msg::Marker::ADD) {
+                    sensor_markers_.at(i) = msg->markers.at(i);
 
                     //update
-                    double obs_x = msg->markers[i].pose.position.x;
-                    double obs_y = msg->markers[i].pose.position.y;
+                    double obs_x = msg->markers.at(i).pose.position.x;
+                    double obs_y = msg->markers.at(i).pose.position.y;
                     double dist_obs = std::hypot(obs_x, obs_y);
                     double angle_obs = std::atan2(obs_y, obs_x);
-                    ekf_.update(msg->markers[i].id, dist_obs, angle_obs);
+                    ekf_.update(msg->markers.at(i).id, dist_obs, angle_obs);
                 }
-                else if (msg->markers[i].action == visualization_msgs::msg::Marker::DELETE) {
-                    sensor_markers_[i] = visualization_msgs::msg::Marker();
+                else if (msg->markers.at(i).action == visualization_msgs::msg::Marker::DELETE) {
+                    sensor_markers_.at(i) = visualization_msgs::msg::Marker();
                 }
             }
             publish_transforms();
         }
 
+        /// \brief Publish transforms
         void publish_transforms() {
             auto stamp = this->now();
 

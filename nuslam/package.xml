@@ -3,7 +3,7 @@
 <package format="3">
   <name>nuslam</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>This is the SLAM package for turtlebot3</description>
   <maintainer email="zhuc1915@gmail.com">ChenyuZhu</maintainer>
   <license>Apache-2.0</license>
 

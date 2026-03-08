@@ -3,21 +3,21 @@
 #undef pi  // angle.hpp defines pi as a macro which conflicts with arma::Datum<T>::pi
 
 void EKF::predict(std::vector<double> action) {
-    auto theta = state_[0];
-    state_[0] = turtlelib::normalize_angle(state_[0] + action[0]);
+    auto theta = state_.at(0);
+    state_.at(0) = turtlelib::normalize_angle(state_.at(0) + action.at(0));
     arma::mat A_mat(3 + 2 * obs_num_, 3 + 2 * obs_num_, arma::fill::eye);
-    if (std::abs(action[0]) < 1e-10) {
+    if (std::abs(action.at(0)) < 1e-10) {
         // Pure translation (straight line)
-        state_[1] += action[1] * std::cos(theta);
-        state_[2] += action[1] * std::sin(theta);
-        A_mat(1, 0) = -action[1] * std::sin(theta);
-        A_mat(2, 0) =  action[1] * std::cos(theta);
+        state_.at(1) += action.at(1) * std::cos(theta);
+        state_.at(2) += action.at(1) * std::sin(theta);
+        A_mat(1, 0) = -action.at(1) * std::sin(theta);
+        A_mat(2, 0) =  action.at(1) * std::cos(theta);
     } else {
         // Arc motion
-        state_[1] += action[1] / action[0] * (-std::sin(theta) + std::sin(theta + action[0]));
-        state_[2] += action[1] / action[0] * ( std::cos(theta) - std::cos(theta + action[0]));
-        A_mat(1, 0) = action[1] / action[0] * (-std::cos(theta) + std::cos(theta + action[0]));
-        A_mat(2, 0) = action[1] / action[0] * (-std::sin(theta) + std::sin(theta + action[0]));
+        state_.at(1) += action.at(1) / action.at(0) * (-std::sin(theta) + std::sin(theta + action.at(0)));
+        state_.at(2) += action.at(1) / action.at(0) * ( std::cos(theta) - std::cos(theta + action.at(0)));
+        A_mat(1, 0) = action.at(1) / action.at(0) * (-std::cos(theta) + std::cos(theta + action.at(0)));
+        A_mat(2, 0) = action.at(1) / action.at(0) * (-std::sin(theta) + std::sin(theta + action.at(0)));
     }
     // Process noise only on robot pose (top-left 3x3); landmarks are static
     arma::mat Q(3 + 2 * obs_num_, 3 + 2 * obs_num_, arma::fill::zeros);
@@ -28,15 +28,15 @@ void EKF::predict(std::vector<double> action) {
 }
 
 void EKF::update(int id, double dist_obs, double angle_obs) {
-    if (!seen_[id]) {
+    if (!seen_.at(id)) {
         // Initialize landmark position from first measurement
-        state_[3 + 2*id] = state_[1] + dist_obs * std::cos(angle_obs + state_[0]);
-        state_[4 + 2*id] = state_[2] + dist_obs * std::sin(angle_obs + state_[0]);
-        seen_[id] = true;
+        state_.at(3 + 2*id) = state_.at(1) + dist_obs * std::cos(angle_obs + state_.at(0));
+        state_.at(4 + 2*id) = state_.at(2) + dist_obs * std::sin(angle_obs + state_.at(0));
+        seen_.at(id) = true;
     }
     arma::mat H_mat(2, 3 + 2 * obs_num_, arma::fill::zeros);
-    auto del_x = state_[3 + 2*id] - state_[1]; // estimated relative x position
-    auto del_y = state_[4 + 2*id] - state_[2]; // estimated relative y position
+    auto del_x = state_.at(3 + 2*id) - state_.at(1); // estimated relative x position
+    auto del_y = state_.at(4 + 2*id) - state_.at(2); // estimated relative y position
     auto d = del_x * del_x + del_y * del_y;
     H_mat(0, 1) = -del_x / std::sqrt(d);
     H_mat(0, 2) = -del_y / std::sqrt(d);
@@ -53,24 +53,24 @@ void EKF::update(int id, double dist_obs, double angle_obs) {
     arma::vec y_vec(2); // error between measurement and prediction
     y_vec[0] = dist_obs - std::sqrt(d);                                    // range innovation
     y_vec[1] = turtlelib::normalize_angle(
-        angle_obs - (std::atan2(del_y, del_x) - state_[0])); // bearing innovation
+        angle_obs - (std::atan2(del_y, del_x) - state_.at(0))); // bearing innovation
 
     arma::vec x_vec(3 + 2 * obs_num_);
     x_vec.zeros();
-    x_vec[0] = state_[0];
-    x_vec[1] = state_[1];
-    x_vec[2] = state_[2];
+    x_vec[0] = state_.at(0);
+    x_vec[1] = state_.at(1);
+    x_vec[2] = state_.at(2);
     for (int i = 0; i < obs_num_; i++) {
-        x_vec[3 + 2*i] = state_[3 + 2*i];
-        x_vec[4 + 2*i] = state_[4 + 2*i];
+        x_vec[3 + 2*i] = state_.at(3 + 2*i);
+        x_vec[4 + 2*i] = state_.at(4 + 2*i);
     }
     x_vec += K * y_vec;
-    state_[0] = turtlelib::normalize_angle(x_vec[0]);
-    state_[1] = x_vec[1];
-    state_[2] = x_vec[2];
+    state_.at(0) = turtlelib::normalize_angle(x_vec.at(0));
+    state_.at(1) = x_vec.at(1);
+    state_.at(2) = x_vec.at(2);
     for (int i = 0; i < obs_num_; i++) {
-        state_[3 + 2*i] = x_vec[3 + 2*i];
-        state_[4 + 2*i] = x_vec[4 + 2*i];
+        state_.at(3 + 2*i) = x_vec.at(3 + 2*i);
+        state_.at(4 + 2*i) = x_vec.at(4 + 2*i);
     }
     zegma_ = (arma::eye(3 + 2 * obs_num_, 3 + 2 * obs_num_) - K * H_mat) * zegma_;
 }
