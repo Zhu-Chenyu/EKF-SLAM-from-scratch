@@ -1,3 +1,45 @@
+/// \file
+/// \brief A ROS2 node that simulates the turtlebot3 robot
+///
+/// PARAMETERS:
+///     rate (double): the rate at which the simulation runs (Hz)
+///     x0 (double): initial x position of the robot
+///     y0 (double): initial y position of the robot
+///     theta0 (double): initial orientation of the robot
+///     arena_x_length (double): length of the arena in the x direction
+///     arena_y_length (double): length of the arena in the y direction
+///     obstacles.x (double[]): x coordinates of obstacles
+///     obstacles.y (double[]): y coordinates of obstacles
+///     obstacles.r (double): radius of the obstacles
+///     input_noise (double): variance of the noise added to wheel velocities
+///     slip_fraction (double): fraction of wheel slip
+///     basic_sensor_variance (double): variance of the basic obstacle sensor
+///     max_range (double): maximum detection range for obstacles
+///     collision_radius (double): collision radius of the robot
+///     draw_only (bool): if true, only draw the arena and obstacles
+///     encoder_ticks_per_rad (double): encoder ticks per radian
+///     wheel_radius (double): radius of the wheels
+///     track_width (double): distance between the wheels
+///     motor_cmd_per_rad_sec (double): motor command per rad/sec
+///     scan_noise (double): noise added to the lidar scan
+///     scan_angle_increment (double): angle increment of the lidar
+///     scan_resolution (double): resolution of the lidar
+///     scan_range_min (double): minimum range of the lidar
+///     scan_range_max (double): maximum range of the lidar
+/// PUBLISHES:
+///     ~/timestep (std_msgs/msg/UInt64): the current simulation timestep
+///     ~/real_walls (visualization_msgs/msg/MarkerArray): arena wall markers
+///     ~/real_obstacles (visualization_msgs/msg/MarkerArray): ground-truth obstacle markers
+///     ~/fake_sensor (visualization_msgs/msg/MarkerArray): simulated sensor obstacle detections
+///     red/sensor_data (nuturtlebot_msgs/msg/SensorData): simulated encoder data
+///     red/joint_states (sensor_msgs/msg/JointState): simulated joint states
+///     red/scan (sensor_msgs/msg/LaserScan): simulated lidar scan
+///     ground_truth (nav_msgs/msg/Path): the ground-truth path of the robot
+/// SUBSCRIBES:
+///     red/wheel_cmd (nuturtlebot_msgs/msg/WheelCommands): wheel velocity commands
+/// SERVERS:
+///     ~/reset (std_srvs/srv/Empty): resets the simulation timestep and robot pose
+
 #include <chrono>
 #include <functional>
 #include <memory>

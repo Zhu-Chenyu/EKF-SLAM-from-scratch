@@ -2,6 +2,20 @@
 #define NUTURTLE_CONTROL_TURTLE_CONTROL_HPP
 /// \file
 /// \brief A ROS2 node that controls each wheel and reads the encoders of wheels.
+///
+/// PARAMETERS:
+///     wheel_radius (double): the radius of the wheels
+///     track_width (double): the distance between the wheels
+///     motor_cmd_max (int): maximum motor command value
+///     motor_cmd_per_rad_sec (double): motor command per rad/sec
+///     encoder_ticks_per_rad (double): encoder ticks per radian
+///     collision_radius (double): collision radius of the robot
+/// PUBLISHES:
+///     wheel_cmd (nuturtlebot_msgs/msg/WheelCommands): the wheel velocity commands
+///     joint_states (sensor_msgs/msg/JointState): the joint states from encoder readings
+/// SUBSCRIBES:
+///     cmd_vel (geometry_msgs/msg/Twist): the desired twist velocity
+///     sensor_data (nuturtlebot_msgs/msg/SensorData): the encoder sensor data
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/rclcpp.hpp"

@@ -1,7 +1,14 @@
 #ifndef NUTURTLE_CONTROL_CIRCLE_HPP
 #define NUTURTLE_CONTROL_CIRCLE_HPP
 /// \file
-/// \brief A class to compute the control commands for a differential drive robot to follow a circular trajectory.
+/// \brief A ROS2 node that drives the robot in a circular trajectory.
+///
+/// PUBLISHES:
+///     cmd_vel (geometry_msgs/msg/Twist): the velocity commands for the robot
+/// SERVERS:
+///     control (nuturtle_control/srv/Control): set the radius and velocity of the circular trajectory
+///     reverse (std_srvs/srv/Empty): reverse the direction of the circular trajectory
+///     stop (std_srvs/srv/Empty): stop the circular trajectory
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_srvs/srv/empty.hpp"

@@ -1,3 +1,13 @@
+/// \file
+/// \brief A ROS2 node that implements SLAM using an Extended Kalman Filter
+///
+/// PUBLISHES:
+///     slam_path (nav_msgs/msg/Path): the SLAM-estimated path of the robot
+///     odom_measurement (nav_msgs/msg/Path): the uncorrected odometry path
+/// SUBSCRIBES:
+///     odom (nav_msgs/msg/Odometry): the odometry of the robot
+///     sensor_data (visualization_msgs/msg/MarkerArray): the detected landmarks
+
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "nav_msgs/msg/path.hpp"

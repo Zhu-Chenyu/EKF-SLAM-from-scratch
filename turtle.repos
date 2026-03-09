@@ -1,5 +1,5 @@
 repositories:
-  src:
+  nuturtlebot_msgs:
     type: git
-    url: https://github.com/ME495-Navigation/slam-Zhu-Chenyu.git
-    version: main
+    url: https://github.com/NU-MSR/nuturtlebot_msgs.git
+    version: ros2

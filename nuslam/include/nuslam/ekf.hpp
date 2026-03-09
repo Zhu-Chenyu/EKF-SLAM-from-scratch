@@ -1,5 +1,7 @@
 #ifndef NUSLAM_EKF_HPP
 #define NUSLAM_EKF_HPP
+/// \file
+/// \brief An EKF class for SLAM
 
 #include "armadillo"
 #include <vector>

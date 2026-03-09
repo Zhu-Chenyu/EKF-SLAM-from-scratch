@@ -40,9 +40,7 @@ public:
   DiffDrive(double wheel_track, double wheel_radius);
 
     /// \brief Default constructor
-  DiffDrive()
-  : wheel_track_(0.0), wheel_radius_(0.0), left_wheel_position_(0.0),
-    right_wheel_position_(0.0), x_(0.0), y_(0.0), theta_(0.0) {}
+  DiffDrive() : DiffDrive(0.0, 0.0) {}
 
     /// \brief Update the robot's pose based on wheel movements
     /// \param new_left_wheel_position - the new position of the left wheel

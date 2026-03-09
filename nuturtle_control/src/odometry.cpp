@@ -16,15 +16,8 @@ Odometry::Odometry()
   declare_parameter<double>("track_width");
 
   try {
-    get_parameter("wheel_radius", wheel_radius_);
-    get_parameter("track_width", track_width_);
-  } catch (const std::exception & e) {
-    RCLCPP_ERROR(this->get_logger(), "Parameter type error: %s", e.what());
-    rclcpp::shutdown();
-    return;
-  }
-
-  try {
+    get_parameter("wheel_radius", this->wheel_radius_);
+    get_parameter("track_width", this->track_width_);
     get_parameter("wheel_left", this->wheel_left_);
     get_parameter("wheel_right", this->wheel_right_);
   } catch (const std::exception & e) {

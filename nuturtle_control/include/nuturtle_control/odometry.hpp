@@ -2,6 +2,20 @@
 #define NUTURTLE_CONTROL_ODOMETRY_HPP
 /// \file
 /// \brief A ROS2 node that subscribes to joint states and publishes odometry information for the nuturtlebot.
+///
+/// PARAMETERS:
+///     body_id (string): the frame id of the robot body
+///     odom_id (string): the frame id of the odometry
+///     wheel_left (string): the name of the left wheel joint
+///     wheel_right (string): the name of the right wheel joint
+///     wheel_radius (double): the radius of the wheels
+///     track_width (double): the distance between the wheels
+/// PUBLISHES:
+///     odom (nav_msgs/msg/Odometry): the odometry of the robot
+/// SUBSCRIBES:
+///     joint_states (sensor_msgs/msg/JointState): the joint states of the robot
+/// SERVERS:
+///     initial_pose (nuturtle_control/srv/InitialPose): reset the robot's pose
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
