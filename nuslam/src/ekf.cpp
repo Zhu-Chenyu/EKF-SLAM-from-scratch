@@ -30,23 +30,23 @@ void EKF::predict(std::vector<double> action) {
 void EKF::update(int id, double dist_obs, double angle_obs) {
     if (!seen_.at(id)) {
         // Initialize landmark position from first measurement
-        state_.at(3 + 2*id) = state_.at(1) + dist_obs * std::cos(angle_obs + state_.at(0));
-        state_.at(4 + 2*id) = state_.at(2) + dist_obs * std::sin(angle_obs + state_.at(0));
+        state_.at(landmark_x(id)) = state_.at(1) + dist_obs * std::cos(angle_obs + state_.at(0));
+        state_.at(landmark_y(id)) = state_.at(2) + dist_obs * std::sin(angle_obs + state_.at(0));
         seen_.at(id) = true;
     }
     arma::mat H_mat(2, 3 + 2 * obs_num_, arma::fill::zeros);
-    auto del_x = state_.at(3 + 2*id) - state_.at(1); // estimated relative x position
-    auto del_y = state_.at(4 + 2*id) - state_.at(2); // estimated relative y position
+    auto del_x = state_.at(landmark_x(id)) - state_.at(1); // estimated relative x position
+    auto del_y = state_.at(landmark_y(id)) - state_.at(2); // estimated relative y position
     auto d = del_x * del_x + del_y * del_y;
     H_mat(0, 1) = -del_x / std::sqrt(d);
     H_mat(0, 2) = -del_y / std::sqrt(d);
-    H_mat(0, 3 + 2*id) = del_x / std::sqrt(d);
-    H_mat(0, 4 + 2*id) = del_y / std::sqrt(d);
+    H_mat(0, landmark_x(id)) = del_x / std::sqrt(d);
+    H_mat(0, landmark_y(id)) = del_y / std::sqrt(d);
     H_mat(1, 0) = -1;
     H_mat(1, 1) = del_y / d;
     H_mat(1, 2) = -del_x / d;
-    H_mat(1, 3 + 2*id) = -del_y / d;
-    H_mat(1, 4 + 2*id) = del_x / d;
+    H_mat(1, landmark_x(id)) = -del_y / d;
+    H_mat(1, landmark_y(id)) = del_x / d;
     arma::mat R_mat(2, 2, arma::fill::eye);
     R_mat *= sensor_noise_variance_;
     arma::mat K = zegma_ * H_mat.t() * (H_mat * zegma_ * H_mat.t() + R_mat).i();
@@ -61,16 +61,16 @@ void EKF::update(int id, double dist_obs, double angle_obs) {
     x_vec[1] = state_.at(1);
     x_vec[2] = state_.at(2);
     for (int i = 0; i < obs_num_; i++) {
-        x_vec[3 + 2*i] = state_.at(3 + 2*i);
-        x_vec[4 + 2*i] = state_.at(4 + 2*i);
+        x_vec[landmark_x(i)] = state_.at(landmark_x(i));
+        x_vec[landmark_y(i)] = state_.at(landmark_y(i));
     }
     x_vec += K * y_vec;
     state_.at(0) = turtlelib::normalize_angle(x_vec.at(0));
     state_.at(1) = x_vec.at(1);
     state_.at(2) = x_vec.at(2);
     for (int i = 0; i < obs_num_; i++) {
-        state_.at(3 + 2*i) = x_vec.at(3 + 2*i);
-        state_.at(4 + 2*i) = x_vec.at(4 + 2*i);
+        state_.at(landmark_x(i)) = x_vec.at(landmark_x(i));
+        state_.at(landmark_y(i)) = x_vec.at(landmark_y(i));
     }
     zegma_ = (arma::eye(3 + 2 * obs_num_, 3 + 2 * obs_num_) - K * H_mat) * zegma_;
 }

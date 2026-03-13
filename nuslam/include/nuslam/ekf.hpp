@@ -38,6 +38,10 @@ private:
     double process_noise_variance_ = 0.01;
     double sensor_noise_variance_ = 0.5;
 
+    /// \brief Get the index of the landmark
+    /// \param id The id of the landmark
+    int landmark_x(int id) { return 3 + 2 * id; }
+    int landmark_y(int id) { return 4 + 2 * id; }
 };
 
 #endif
