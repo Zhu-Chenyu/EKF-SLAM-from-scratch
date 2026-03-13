@@ -1,6 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include "nuslam/circle_fitting.hpp"
 
 class Landmark : public rclcpp::Node {
 public:
@@ -9,6 +10,7 @@ public:
         cluster_threshold_ = get_parameter("cluster_threshold").as_double();
         scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
             "red/scan", 10, std::bind(&Landmark::scan_callback, this, std::placeholders::_1));
+        marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("landmark", 10);
     }
 private:
     void scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
@@ -29,7 +31,7 @@ private:
         auto prev_x = x;
         auto prev_y = y;
 
-        for (int i = 1; i < msg->ranges.size(); i++) {
+        for (int i = 1; i < int(msg->ranges.size()); i++) {
             if (std::isinf(msg->ranges.at(i))) {
                 msg->ranges.at(i) = 1e9;
             }
@@ -55,13 +57,24 @@ private:
             clusters_.y.pop_back();
         }
 
-        for (auto i=0; i<clusters_.x.size(); i++) {
-            if (clusters_.x.at(i).size() < 3) {
+        for (auto i=0; i<int(clusters_.x.size()); i++) {
+            if (clusters_.x.at(i).size() < 5 || !CircleFitting::is_circle(clusters_.x.at(i), clusters_.y.at(i))) {
                 clusters_.x.erase(clusters_.x.begin() + i);
                 clusters_.y.erase(clusters_.y.begin() + i);
                 i--;
             }
         }
+
+        for (auto i=0; i<int(clusters_.x.size()); i++) {
+            auto obs = CircleFitting::fit(clusters_.x.at(i), clusters_.y.at(i));
+            if (obs.at(2) < 0.5 && obs.at(2) > 0.05) {
+                obs_.x.push_back(obs.at(0));
+                obs_.y.push_back(obs.at(1));
+                obs_.radius = obs.at(2);
+            }
+        }
+
+
     }
 
     struct point_clusters {
@@ -81,6 +94,7 @@ private:
     double cluster_threshold_ = 0.1;
     
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 };
 
 int main(int argc, char * argv[]) {
