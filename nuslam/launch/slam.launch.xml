@@ -2,6 +2,7 @@
 <launch>
     <arg name="robot" default="nusim"/>
     <arg name="cmd_src" default="teleop"/>
+    <arg name="use_rviz" default="true"/>
 
     <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" on_exit="shutdown"
         launch-prefix="xterm -e"

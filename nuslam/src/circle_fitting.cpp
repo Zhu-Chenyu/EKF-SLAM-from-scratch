@@ -108,11 +108,14 @@ bool CircleFitting::is_circle(const std::vector<double>& x, const std::vector<do
         ang_vec.push_back(ang);
         ang_mean += ang;
     }
+    ang_mean /= ang_vec.size();
+
+    // check if the angle is in the range [0.5pi, 0.75pi]
     if (ang_mean > 0.75 * M_PI || ang_mean < 0.5 * M_PI) {
         return false;
     }
-    ang_mean /= ang_vec.size();
 
+    // check if the standard deviation is in the range [0, 0.15]
     auto ang_std = 0.0;
     for (int i = 0; i < int(ang_vec.size()); i++) {
         ang_std += (ang_vec.at(i) - ang_mean) * (ang_vec.at(i) - ang_mean);

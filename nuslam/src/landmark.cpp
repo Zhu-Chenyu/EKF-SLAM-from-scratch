@@ -58,23 +58,47 @@ private:
         }
 
         for (auto i=0; i<int(clusters_.x.size()); i++) {
-            if (clusters_.x.at(i).size() < 5 || !CircleFitting::is_circle(clusters_.x.at(i), clusters_.y.at(i))) {
+            if (clusters_.x.at(i).size() < 4 || !CircleFitting::is_circle(clusters_.x.at(i), clusters_.y.at(i))) {
                 clusters_.x.erase(clusters_.x.begin() + i);
                 clusters_.y.erase(clusters_.y.begin() + i);
                 i--;
             }
         }
 
+        visualization_msgs::msg::MarkerArray marker_array;
         for (auto i=0; i<int(clusters_.x.size()); i++) {
             auto obs = CircleFitting::fit(clusters_.x.at(i), clusters_.y.at(i));
-            if (obs.at(2) < 0.5 && obs.at(2) > 0.05) {
+            if (obs.at(2) < 0.5 && obs.at(2) > 0.01) {
                 obs_.x.push_back(obs.at(0));
                 obs_.y.push_back(obs.at(1));
                 obs_.radius = obs.at(2);
+
+                visualization_msgs::msg::Marker marker;
+                marker.header.frame_id = "red/base_footprint";
+                marker.header.stamp = this->now();
+                marker.ns = "basic_shapes";
+                marker.id = i;
+                marker.type = visualization_msgs::msg::Marker::CYLINDER;
+                marker.action = visualization_msgs::msg::Marker::ADD;
+                marker.pose.position.x = obs.at(0);
+                marker.pose.position.y = obs.at(1);
+                marker.pose.position.z = 0.1;
+                marker.pose.orientation.x = 0;
+                marker.pose.orientation.y = 0;
+                marker.pose.orientation.z = 0;
+                marker.pose.orientation.w = 1;
+                marker.scale.x = obs.at(2) * 2;
+                marker.scale.y = obs.at(2) * 2;
+                marker.scale.z = 0.2;
+                marker.color.a = 1.0;
+                marker.color.r = 1.0;
+                marker.color.g = 0.0;
+                marker.color.b = 1.0;
+                marker_array.markers.push_back(marker);
             }
         }
 
-
+        marker_pub_->publish(marker_array);
     }
 
     struct point_clusters {
