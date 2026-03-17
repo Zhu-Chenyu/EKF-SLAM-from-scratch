@@ -31,6 +31,7 @@ class SLAM : public rclcpp::Node {
             slam_path_.header.frame_id = "map";
             odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("odom_measurement", 10);
             odom_path_.header.frame_id = "map";
+            marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("slam_markers", 10);
         }
 
     private:
@@ -108,13 +109,40 @@ class SLAM : public rclcpp::Node {
                     double obs_y = msg->markers.at(i).pose.position.y;
                     double dist_obs = std::hypot(obs_x, obs_y);
                     double angle_obs = std::atan2(obs_y, obs_x);
-                    ekf_.update(msg->markers.at(i).id, dist_obs, angle_obs);
+                    // ekf_.update(msg->markers.at(i).id, dist_obs, angle_obs);
+                    ekf_.update_with_landmark(dist_obs, angle_obs);
                 }
                 else if (msg->markers.at(i).action == visualization_msgs::msg::Marker::DELETE) {
                     sensor_markers_.at(i) = visualization_msgs::msg::Marker();
                 }
             }
             publish_transforms();
+            slam_markers_.markers.clear();
+            for (int i = 0; i < ekf_.get_N(); i++) {
+                visualization_msgs::msg::Marker marker;
+                marker.header.stamp = this->now();
+                marker.header.frame_id = "map";
+                marker.ns = "slam_markers";
+                marker.id = i;
+                marker.type = visualization_msgs::msg::Marker::CYLINDER;
+                marker.action = visualization_msgs::msg::Marker::ADD;
+                marker.pose.position.x = ekf_.get_obs_x(i);
+                marker.pose.position.y = ekf_.get_obs_y(i);
+                marker.pose.position.z = 0.1;
+                marker.pose.orientation.x = 0.0;
+                marker.pose.orientation.y = 0.0;
+                marker.pose.orientation.z = 0.0;
+                marker.pose.orientation.w = 1.0;
+                marker.scale.x = 0.1;
+                marker.scale.y = 0.1;
+                marker.scale.z = 0.2;
+                marker.color.r = 0.0;
+                marker.color.g = 1.0;
+                marker.color.b = 0.0;
+                marker.color.a = 1.0;
+                slam_markers_.markers.push_back(marker);
+            }
+            marker_pub_->publish(slam_markers_);
         }
 
         /// \brief Publish transforms
@@ -164,9 +192,11 @@ class SLAM : public rclcpp::Node {
         rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr sensor_marker_sub_;
         rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
         rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub_;
+        rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
         std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
         nav_msgs::msg::Path slam_path_;
         nav_msgs::msg::Path odom_path_;
+        visualization_msgs::msg::MarkerArray slam_markers_;
 };
 
 int main(int argc, char ** argv)

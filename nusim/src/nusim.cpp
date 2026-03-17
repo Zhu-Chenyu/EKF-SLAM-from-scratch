@@ -214,7 +214,7 @@ public:
 
         // laser scan
         scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("red/scan", 10);
-        declare_parameter("scan_noise", 0.001);
+        declare_parameter("scan_noise", 0.000001); // variance, standard deviation is 0.001
         declare_parameter("scan_angle_increment", turtlelib::deg2rad(1.0));  // 1 degree
         declare_parameter("scan_resolution", turtlelib::deg2rad(1.0));  // 1 degree
         declare_parameter("scan_range_min", 0.12);  // 120mm

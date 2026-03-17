@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="use_rviz" default="true"/>
+    <arg name="robot" default="nusim"/>
+    
+    <include file="$(find-pkg-share nuslam)/launch/slam.launch.xml">
+        <arg name="use_rviz" value="false"/>
+        <arg name="robot" value="$(var robot)"/>
+        <arg name="sensor_data" value="landmark"/>
+    </include>
+
+    <node pkg="nuslam" exec="landmark" name="landmark" output="screen"/>
+
+    <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share nuslam)/config/unknown.rviz"/>
+
+</launch>

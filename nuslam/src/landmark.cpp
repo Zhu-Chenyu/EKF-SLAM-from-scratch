@@ -1,3 +1,8 @@
+/// \file
+/// \brief Landmark detection node
+
+///PUBLISH: /landmark
+///SUBSCRIBE: /red/scan
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
@@ -66,6 +71,10 @@ private:
         }
 
         visualization_msgs::msg::MarkerArray marker_array;
+        // Tell RViz to delete all previously published markers
+        visualization_msgs::msg::Marker delete_all;
+        delete_all.action = visualization_msgs::msg::Marker::DELETEALL;
+        marker_array.markers.push_back(delete_all);
         for (auto i=0; i<int(clusters_.x.size()); i++) {
             auto obs = CircleFitting::fit(clusters_.x.at(i), clusters_.y.at(i));
             if (obs.at(2) < 0.5 && obs.at(2) > 0.01) {

@@ -3,6 +3,7 @@
     <arg name="robot" default="nusim"/>
     <arg name="cmd_src" default="teleop"/>
     <arg name="use_rviz" default="true"/>
+    <arg name="sensor_data" default="nusim/fake_sensor"/>
 
     <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" on_exit="shutdown"
         launch-prefix="xterm -e"
@@ -56,6 +57,6 @@
         args="--x 0 --y 0 --z 0 --yaw 0 --pitch 0 --roll 0 --frame-id nusim/world --child-frame-id map"/>
 
     <node pkg="nuslam" exec="nuslam" name="nuslam">
-        <remap from="sensor_data" to="nusim/fake_sensor"/>
+        <remap from="sensor_data" to="$(var sensor_data)"/>
     </node>
 </launch>

@@ -24,10 +24,17 @@ public:
     /// \param dist_obs The distance to the landmark
     /// \param angle_obs The angle to the landmark
     void update(int id, double dist_obs, double angle_obs);
+    /// \brief Update the state with automatic data association
+    /// \param dist_obs The distance to the landmark
+    /// \param angle_obs The angle to the landmark
+    void update_with_landmark(double dist_obs, double angle_obs);
 
     double get_theta() const { return state_.at(0); }
     double get_x() const { return state_.at(1); }
     double get_y() const { return state_.at(2); }
+    int get_N() const { return N_; }
+    double get_obs_x(int id) const { return state_.at(landmark_x(id)); }
+    double get_obs_y(int id) const { return state_.at(landmark_y(id)); }
 
 private:
     int obs_num_ = 10;
@@ -37,11 +44,12 @@ private:
     arma::mat k_; // Kalman gain
     double process_noise_variance_ = 0.01;
     double sensor_noise_variance_ = 0.5;
+    int N_ = 0; // number of landmarks
 
     /// \brief Get the index of the landmark
     /// \param id The id of the landmark
-    int landmark_x(int id) { return 3 + 2 * id; }
-    int landmark_y(int id) { return 4 + 2 * id; }
+    int landmark_x(int id) const { return 3 + 2 * id; }
+    int landmark_y(int id) const { return 4 + 2 * id; }
 };
 
 #endif
