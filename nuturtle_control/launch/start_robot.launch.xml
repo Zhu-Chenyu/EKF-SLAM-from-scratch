@@ -15,12 +15,10 @@
         if="$(eval '\'$(var cmd_src)\' == \'teleop\'')"/>
     <!-- citation 2 -->
 
-    <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom"
-        args="--x 0 --y 0 --z 0 --yaw 0 --pitch 0 --roll 0 --frame-id nusim/world --child-frame-id odom"/>
-
-
     <!-- default settings for robot: nusim -->
     <group if="$(eval '\'$(var robot)\' == \'nusim\'')">
+        <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom"
+            args="--x 0 --y 0 --z 0 --yaw 0 --pitch 0 --roll 0 --frame-id nusim/world --child-frame-id odom"/>
 
         <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.xml">
             <arg name="use_rviz" value="false"/>
@@ -84,6 +82,9 @@
     </group>
 
     <group if="$(eval '\'$(var robot)\' == \'none\'')">
+        <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom"
+            args="--x 0 --y 0 --z 0 --yaw 0 --pitch 0 --roll 0 --frame-id nusim/world --child-frame-id odom"/>
+
         <node pkg="nusim" exec="nusim" name="nuwalls">
             <param from="$(find-pkg-share nusim)/config/basic_world.yaml"/>
             <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>

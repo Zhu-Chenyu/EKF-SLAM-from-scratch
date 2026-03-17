@@ -1,0 +1,25 @@
+<launch>
+
+    <node pkg="numsr_turtlebot" exec="numsr_turtlebot"/>
+
+    <include file="$(find-pkg-share hls_lfcd_lds_driver)/launch/hlds_laser.launch.py">
+        <arg name="port" value="/dev/ttyUSB0"/>
+        <arg name="frame_id" value="green/base_scan"/>
+    </include>
+
+    <node pkg="nuturtle_control" exec="turtle_control" name="turtle_control">
+        <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+        <remap from="joint_states" to="blue/joint_states"/>
+    </node>
+
+    <node pkg="nuturtle_control" exec="odometry" name="odometry">
+        <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+        <param name="body_id" value="green/base_footprint"/>
+        <param name="wheel_left" value="wheel_left_joint"/>
+        <param name="wheel_right" value="wheel_right_joint"/>
+        <remap from="joint_states" to="blue/joint_states"/>
+    </node>
+
+    <node pkg="nuslam" exec="landmark" name="landmark" output="screen"/>
+  
+</launch>

@@ -14,7 +14,7 @@ public:
         declare_parameter("cluster_threshold", 0.1);
         cluster_threshold_ = get_parameter("cluster_threshold").as_double();
         scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "red/scan", 10, std::bind(&Landmark::scan_callback, this, std::placeholders::_1));
+            "scan", 10, std::bind(&Landmark::scan_callback, this, std::placeholders::_1));
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("landmark", 10);
     }
 private:
@@ -83,7 +83,7 @@ private:
                 obs_.radius = obs.at(2);
 
                 visualization_msgs::msg::Marker marker;
-                marker.header.frame_id = "red/base_footprint";
+                marker.header.frame_id = "green/base_footprint";
                 marker.header.stamp = this->now();
                 marker.ns = "basic_shapes";
                 marker.id = i;
