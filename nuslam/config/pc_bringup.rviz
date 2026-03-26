@@ -5,12 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Status1
         - /RobotModel1
-        - /RobotModel1/Description Topic1
         - /RobotModel2
-        - /MarkerArray1
-        - /LaserScan1
         - /LaserScan1/Topic1
       Splitter Ratio: 0.5
     Tree Height: 542
@@ -254,7 +250,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 10210
+      Max Intensity: 7503
       Min Color: 0; 0; 0
       Min Intensity: 111
       Name: LaserScan
@@ -272,6 +268,18 @@ Visualization Manager:
         Value: /scan
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /landmark
       Value: true
   Enabled: true
   Global Options:
@@ -319,7 +327,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.370009422302246
+      Distance: 4.587949275970459
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -334,10 +342,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4847968816757202
+      Pitch: 0.7347967624664307
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.5985512733459473
+      Yaw: 1.8235496282577515
     Saved: ~
 Window Geometry:
   Displays:
@@ -355,5 +363,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 311
-  Y: 146
+  X: 74
+  Y: 123

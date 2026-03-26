@@ -62,7 +62,10 @@ class SLAM : public rclcpp::Node {
             theta_ = 2.0 * std::asin(msg->pose.pose.orientation.z);
 
             //predict
-            std::vector<double> action = {theta_ - prev_theta_, std::hypot(x_ - prev_x_, y_ - prev_y_)};
+            double dx = x_ - prev_x_;
+            double dy = y_ - prev_y_;
+            double signed_dist = dx * std::cos(prev_theta_) + dy * std::sin(prev_theta_);
+            std::vector<double> action = {theta_ - prev_theta_, signed_dist};
             ekf_.predict(action);
             prev_x_ = x_;
             prev_y_ = y_;

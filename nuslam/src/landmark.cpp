@@ -63,7 +63,7 @@ private:
         }
 
         for (auto i=0; i<int(clusters_.x.size()); i++) {
-            if (clusters_.x.at(i).size() < 4 || !CircleFitting::is_circle(clusters_.x.at(i), clusters_.y.at(i))) {
+            if (clusters_.x.at(i).size() < 5 || !CircleFitting::is_circle(clusters_.x.at(i), clusters_.y.at(i))) {
                 clusters_.x.erase(clusters_.x.begin() + i);
                 clusters_.y.erase(clusters_.y.begin() + i);
                 i--;
