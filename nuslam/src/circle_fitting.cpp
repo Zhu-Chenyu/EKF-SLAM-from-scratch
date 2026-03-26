@@ -81,6 +81,9 @@ std::vector<double> CircleFitting::fit(const std::vector<double>& x, const std::
                 min_idx = i;
             }
         }
+        if (min_idx == -1) {
+            return {0.0, 0.0, 0.0};
+        }
         arma::mat a_star_mat = eigvecs.col(min_idx);
         a_mat = y_mat.i() * a_star_mat;
     }

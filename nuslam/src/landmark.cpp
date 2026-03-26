@@ -14,7 +14,7 @@ public:
         declare_parameter("cluster_threshold", 0.1);
         cluster_threshold_ = get_parameter("cluster_threshold").as_double();
         scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "scan", 10, std::bind(&Landmark::scan_callback, this, std::placeholders::_1));
+            "scan", rclcpp::SensorDataQoS(), std::bind(&Landmark::scan_callback, this, std::placeholders::_1));
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("landmark", 10);
     }
 private:
@@ -25,7 +25,7 @@ private:
         auto angle_start = msg->angle_min;
 
         //process the first scan point
-        if (std::isinf(msg->ranges.at(0))) {
+        if (!std::isfinite(msg->ranges.at(0))) {
             msg->ranges.at(0) = 1e9;
         }
         auto x = msg->ranges.at(0) * std::cos(angle_start);
@@ -37,7 +37,7 @@ private:
         auto prev_y = y;
 
         for (int i = 1; i < int(msg->ranges.size()); i++) {
-            if (std::isinf(msg->ranges.at(i))) {
+            if (!std::isfinite(msg->ranges.at(i))) {
                 msg->ranges.at(i) = 1e9;
             }
             auto x = msg->ranges.at(i) * std::cos(angle_start + i * angle_increment);
@@ -63,7 +63,7 @@ private:
         }
 
         for (auto i=0; i<int(clusters_.x.size()); i++) {
-            if (clusters_.x.at(i).size() < 5 || !CircleFitting::is_circle(clusters_.x.at(i), clusters_.y.at(i))) {
+            if (clusters_.x.at(i).size() < 8 || !CircleFitting::is_circle(clusters_.x.at(i), clusters_.y.at(i))) {
                 clusters_.x.erase(clusters_.x.begin() + i);
                 clusters_.y.erase(clusters_.y.begin() + i);
                 i--;
@@ -84,7 +84,7 @@ private:
 
                 visualization_msgs::msg::Marker marker;
                 marker.header.frame_id = "green/base_footprint";
-                marker.header.stamp = this->now();
+                marker.header.stamp = rclcpp::Time(0);
                 marker.ns = "basic_shapes";
                 marker.id = i;
                 marker.type = visualization_msgs::msg::Marker::CYLINDER;
