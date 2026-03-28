@@ -1,123 +1,59 @@
 # ME495 Sensing, Navigation and Machine Learning For Robotics
-* Chenyu Zhu
-* Winter 2025
-# Package List
-This repository consists of several ROS packages
-- Nuturtle Description - describle and show multiple turtlerobots on rviz
-- turtlelib - contains useful functions for geometry calculations
-- nusim - load the arena with walls and obstacles, and put robot in it
+**Chenyu Zhu — Winter 2025**
 
+EKF SLAM pipeline running on a real TurtleBot3, with landmark detection, odometry, and a full two-machine ROS2 setup.
 
-# Nuturtle  Description
-URDF files for Nuturtle RapidBot
-* `ros2 launch nuturtle_description load_one.launch.xml` to see the robot in rviz.
-* `ros2 launch nuturtle_description load_all.launch.xml` to see four copies of the robot in rviz.
-![](images/rviz.png)
-* The rqt_graph when all four robots are visualized (Nodes Only, Hide Debug) is:
-![](images/rqt_graph.svg)
+## Real Robot Demo
 
-# Turtlelib
-A useful library for geometry calculations
-* `angle.hpp` deal with angle calculations
-* `geometry.hpp` basic calculations for 2D vectors and points
-* `se2d.hpp` calculations regarding transformation
-* `diff_drive.hpp` kinematics functions of a diff-drive robot
+[![NuSLAM Real Robot Demo](https://img.youtube.com/vi/vrTNOKXWeiI/0.jpg)](https://www.youtube.com/watch?v=vrTNOKXWeiI)
 
-# Nusim
-A world creator and load turtlebots in it
-* `ros2 launch nusim nusim.launch.xml` to create the world.
-![](nusim/images/nusim1.png)
+The robot drives a circuit and returns to its starting position. The green robot is the SLAM estimate, the blue robot is raw odometry.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `rate` | double | 100.0 | Simulation update rate in Hz |
-| `x0` | double | 0.0 | Initial x position of the robot |
-| `y0` | double | 0.0 | Initial y position of the robot |
-| `theta0` | double | 0.0 | Initial orientation of the robot (radians) |
-| `arena_x_length` | double | 8.0 | Length of the arena in the x direction (meters) |
-| `arena_y_length` | double | 8.0 | Length of the arena in the y direction (meters) |
-| `obstacles.x` | double[] | [] | List of x coordinates for obstacles |
-| `obstacles.y` | double[] | [] | List of y coordinates for obstacles |
-| `obstacles.r` | double | 0.2 | Radius of all obstacles (meters) |
+## SLAM Pose Error (Unknown Data Association)
 
-# Nuturtle Control
-This package controls the real turtle robot
-* `circle.hpp` drive the robot in a circle
-* `odometry.hpp` convert joint states into odometry information
-* `turtle_control.hpp` drive wheels and get wheels positions
+| Comparison | x (m) | y (m) | Total (m) |
+|---|---|---|---|
+| Actual vs Odometry | 0.633 | 0.176 | 0.657 |
+| Actual vs SLAM | 0.001 | 0.000 | 0.001 |
 
-# Nuturtle Msgs
-This package contains useful messages for the turtle robot
+## Packages
 
-# Nuslam
-This package implements extended kalman filter that corrects odometry data based on sensor data
-* `ekf.hpp` defines the class of extended kalman filter, including predict and update function
-* `nuslam.cpp` calls kalman filter periodically and visualize the corrected robot pose in rviz
-![](images/kalmanfilter.png)
+### [nuslam](nuslam/README.md)
+EKF SLAM with unknown data association. Detects cylindrical landmarks from LiDAR scan clusters using circle fitting, then runs an EKF to correct the robot's pose estimate. Supports both simulation and real robot.
 
-# Launch File Details
-* `ros2 launch nuturtle_description load_one.launch.xml --show-args`
-  ```bash
-  Arguments (pass arguments as '<name>:=<value>'):
+```
+# On the TurtleBot
+ros2 launch nuslam turtlebot_bringup.launch.xml
 
-    'use_rviz':
-        Open rviz
-        (default: 'true')
+# On the PC
+ros2 launch nuslam pc_bringup.launch.xml
+```
 
-    'use_jsp':
-        Use joint state publisher
-        (default: 'true')
+### nuturtle_control
+Controls the real TurtleBot3 hardware. Converts `cmd_vel` to wheel commands (`turtle_control`), integrates wheel encoders into odometry (`odometry`), and provides a circle-driving mode (`circle`).
 
-    'color':
-        One of: ['red', 'green', 'blue', 'purple']
-        (default: 'purple')
-  ```
-* `ros2 launch nuturtle_description load_all.launch.xml --show-args`
-  ```bash
-  Arguments (pass arguments as '<name>:=<value>'):
+### nusim
+Simulator for the TurtleBot3. Creates an arena with configurable walls and cylindrical obstacles, simulates encoder noise, and publishes a fake LiDAR scan.
 
-    'use_rviz':
-        Open rviz
-        (default: 'true')
+```
+ros2 launch nusim nusim.launch.xml
+```
 
-    'use_jsp':
-        Use joint state publisher
-        (default: 'true')
+### nuturtle_description
+URDF and launch files for visualizing the TurtleBot3. Supports launching one or multiple colored robot instances simultaneously.
 
-    'world_frame':
-        Select world frame
-        (default: 'nusim/world')
+```
+ros2 launch nuturtle_description load_one.launch.xml
+ros2 launch nuturtle_description load_all.launch.xml
+```
 
-    'color':
-        One of: ['red', 'green', 'blue', 'purple']
-        (default: 'purple')
-  ```
-* `ros2 launch nuslam slam.launch.xml`
-  ```bash
-  Arguments (pass arguments as '<name>:=<value>'):
+### turtlelib
+C++ geometry library used across packages. Provides 2D rigid body transforms (SE2), twist/wrangle operations, and differential drive kinematics.
 
-    'robot':
-        no description given
-        (default: 'nusim')
+## Simulation
 
-    'cmd_src':
-        no description given
-        (default: 'teleop')
+![SLAM Simulation](images/kalmanfilter.png)
 
-    'use_rviz':
-        Open rviz
-        (default: 'true')
+[Simulation video — SLAM with known data association](https://github.com/user-attachments/assets/7a3695a2-e658-4960-9db1-97ebaf027cb2)
 
-    'use_jsp':
-        Use joint state publisher
-        (default: 'true')
-
-    'color':
-        One of: ['red', 'green', 'blue', 'purple']
-        (default: 'purple')
-  ```
-
-  [](https://github.com/user-attachments/assets/7a3695a2-e658-4960-9db1-97ebaf027cb2)
-
-
-  [](https://github.com/user-attachments/assets/7b79d5f1-7803-4adb-b0d5-2778ddb19b9f)
+[Simulation video — SLAM with unknown data association](https://github.com/user-attachments/assets/7b79d5f1-7803-4adb-b0d5-2778ddb19b9f)
