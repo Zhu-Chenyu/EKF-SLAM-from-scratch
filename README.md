@@ -13,8 +13,8 @@ The robot drives a circuit and returns to its starting position. The green robot
 
 | Comparison | x (m) | y (m) | Total (m) |
 |---|---|---|---|
-| Actual vs Odometry | 0.633 | 0.176 | 0.657 |
-| Actual vs SLAM | 0.001 | 0.000 | 0.001 |
+| Actual vs Odometry | -0.047 | 0.053 | 0.071 |
+| Actual vs SLAM | 0.027 | 0.004 | 0.027 |
 
 ## Packages
 
